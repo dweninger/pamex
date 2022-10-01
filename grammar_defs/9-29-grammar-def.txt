@@ -1,0 +1,18 @@
+comment = "#" { ANYTHING } .
+assign = "assign" var "->" var";" .
+addtag = var":" tag {tag} .
+define = "def" operation {tag}";" .
+operation = "(" (setres | opvar) ")" .
+opvar = op var .
+setres = "set" res .
+tag = "(" "+" var ")" .
+var = (word | symbols) {number} {var} .
+symbols = symbol {symbol} .
+symbol = "." | "_" | "-" .
+number = digit {digit} .
+digit = "0" | "1" | "..." | "9" .
+word = letter {letter} .
+letter = "A" | "B" | "..." | "Z" | "a" | "b" | ... | "z" .
+op = "<" | ">" | "=" .
+res = "restricted" | "unrestricted" .
+opt-ws = { WHITESPACE } .

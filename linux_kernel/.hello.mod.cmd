@@ -1,1 +1,1 @@
-cmd_/home/daniel/Documents/capstone/linux_kernel/hello.mod := { echo  /home/daniel/Documents/capstone/linux_kernel/hello.o;  echo; } > /home/daniel/Documents/capstone/linux_kernel/hello.mod
+cmd_/home/daniel/Documents/capstone/linux_kernel/hello.mod := printf '%s\n'   hello.o | awk '!x[$$0]++ { print("/home/daniel/Documents/capstone/linux_kernel/"$$0) }' > /home/daniel/Documents/capstone/linux_kernel/hello.mod

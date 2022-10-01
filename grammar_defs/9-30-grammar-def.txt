@@ -1,0 +1,22 @@
+comment ::= "#" (.)* .
+user-assign ::= "user-assign" level-name [label-list] "->" user";" .
+file-assign ::= "file-assign" level-name [label-list] "->" file";" .
+user ::= var .
+file ::= var .
+label-list ::= "[" labels "]" .
+labels ::= label-name{"," labels}
+define-label ::= "label" label-name";" .
+define-level ::= "level" level-name operation";" .
+level-name ::= var .
+label-name ::= var .
+operation ::= "(" (setres | opvar) ")" .
+opvar ::= op var .
+setres ::= "set" res .
+var ::= (word | symbols) {number} {var} .
+symbols ::= ["." | "_" | "-"]+ .
+number ::= [0-9]+ .
+word ::= [A-Za-z]+ .
+op ::= "<" | ">" | "=" .
+res ::= "restricted" | "unrestricted" .
+opt-ws ::= [WHITESPACE]+ .
+

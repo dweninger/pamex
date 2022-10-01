@@ -1,0 +1,25 @@
+# this is a comment
+
+# Policy Definitions #
+
+def non-confidential: (set unrestricted);
+def confidential: (set restricted);
+def secret: (> confidential);
+def additional: (= secret) (+ additional);
+def more: (= secret) (+ additional);
+def things: (= secret) (+ more);
+more: (+ things);
+def top-secret: (> secret);
+def independent: (set restricted);
+def admin: (> top-secret) (+ independent);
+
+# Assign Policies to Files#
+
+# in order to extract file1.txt, the user needs
+# secret, additional, more, and things access or top-secret access
+assign file1.txt -> more;
+
+# in order to extract file2.txt, the user needs admin access
+# wich includes top-secret and independent access
+assign file2.txt -> admin;
+
