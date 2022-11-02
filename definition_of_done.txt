@@ -1,0 +1,30 @@
+==============================
+ Definition of Done    
+ Author: Daniel Weninger
+ Created On: 10/21/2022
+ Last Modified: 10/21/2022
+==============================
+
+This is Daniel's definition of done for agile programming and scrum purposes.
+If a part of the project does not meet one of the criteria listed,
+it is not considered done for that category.
+
+1) Development
+ > Product works as intended via the product owner's specifications
+ > There are no major bugs impeding the happy path of the project
+ > All functional tests pass
+
+2) For Review
+ > Everything in the Development category and...
+ > The product is approved by both the product owner and the project advisor.
+ > All code is pushed to the respective Git repository and therefore published.
+ > The product is user friendly (able to resonably be used by any user of
+	the intended audience).
+
+3) Testing/QA
+ > Everything in the For Review category and...
+ > All foreseen paths of the project work as intended with 
+	error handing in place where needed.
+ > All bugs are either closed or postponed.
+ > Full documentation is written about the product.
+ > Performance tests have passing results.
