@@ -1,12 +1,9 @@
-void yyerror(char * s, ...);
+void yyerror(const char * s);
 
-char * doUserAssignWithList(char * a, char * b, char * c);
-char * doUserAssign(char * a, char * b);
-char * doFileAssignWithList(char * a, char * b, char * c);
-char * doFileAssign(char * a, char * b);
-char * doLabelListMultiple(char * a, char * b);
-char * doLabelList(char * a);
-char * doDefineLevel(char * a, char * b);
-char * doDefineLabel(char * a, char * b);
-char * doComp(double a, char * b);
-char * doSet(char * a);
+char * doUserAssign(char * levelName, char * user, ...);
+char * doFileAssign(char * levelName, char * file, ...);
+char * doLabelList(char * label, ...);
+char * doDefineLevel(char * levelName, char * op);
+char * doDefineLabel(char * labelName);
+char * doComp(double op, char * id);
+char * doSet(char * res);

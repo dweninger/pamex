@@ -47,15 +47,15 @@ extern int yylex();
 %%
 
 UserAssign	:	USERASSIGN LevelName '-''>' User ';'	{ $$ = doUserAssign($2, $5); }
-	   	|	USERASSIGN LevelName LabelList '-''>' User ';'	{ $$ = doUserAssignWithList($2, $6, $3); }
+	   	|	USERASSIGN LevelName LabelList '-''>' User ';'	{ $$ = doUserAssign($2, $6, $3); }
 FileAssign	:	FILEASSIGN LevelName '-''>' File ';'	{ $$ = doFileAssign($2, $5); }
-	   	|	FILEASSIGN LevelName LabelList  '-''>' File ';'	{ $$ = doFileAssignWithList($2, $6, $3); }
+	   	|	FILEASSIGN LevelName LabelList  '-''>' File ';'	{ $$ = doFileAssign($2, $6, $3); }
 User		:	Id			{ $$ = $1; }
 File		:	Id			{ $$ = $1; }
 LabelList	:	'[' Labels ']'		{ $$ = $2; }
 Labels		:	LabelName		{ $$ = doLabelList($1); }
-       		|	LabelName ',' Labels	{ $$ = doLabelListMultiple($1, $3); }	
-DefLabel	:	LABEL LabelName Op ';'	{ $$ = doDefineLabel($2, $3); }
+       		|	LabelName ',' Labels	{ $$ = doLabelList($1, $3); }	
+DefLabel	:	LABEL LabelName ';'	{ $$ = doDefineLabel($2); }
 DefLevel	:	LEVEL LevelName Op ';'	{ $$ = doDefineLevel($2, $3); }
 LevelName	:	Id		{ $$ = $1; }
 LabelName 	:	Id		{ $$ = $1; }
