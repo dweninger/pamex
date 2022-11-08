@@ -12,6 +12,7 @@
 #include <string.h>
 #include "policy.tab.h"
 
+void yyerror(const char * s);
 %}
 
 ws		[ \t]+
@@ -58,3 +59,7 @@ int main(int argc, char **argv) {
 	yylex();
 }
 
+void yyerror(const char *s)
+{
+             fprintf(stderr, "%d: %s\n", yylineno, s);
+}
