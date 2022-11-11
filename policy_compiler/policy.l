@@ -18,7 +18,7 @@ void yyerror(char * msg);
 ws		[ \t]+
 comment 	#.*
 nl		\n
-id		[A-Za-z][-_A-Za-z0-9]+
+id		[\.\/A-Za-z][-_\/\.A-Za-z0-9]*
 letter	 	[A-Za-z]
 digit 		[0-9]
 

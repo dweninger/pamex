@@ -57,22 +57,22 @@ extern int yytext();
 
 stmt_list	: 	stmt_list stmt
  		|	stmt							;
-stmt		:	USERASSIGN level_name '-''>' user ';'			{ doUserAssignLevel($2, $5); free($2); free($5);}
-		|	USERASSIGN level_name label_list '-''>' user ';'	{ doUserAssignLevel($2, $6); doUserAssignLabels($3, $6); free($2); free($3); free($6); }
-		|	FILEASSIGN level_name '-''>' file ';'			{ doFileAssignLevel($2, $5); free($2); free($5); }
-		|   	FILEASSIGN level_name label_list  '-''>' file ';'	{ doFileAssignLevel($2, $6); doFileAssignLabels($3, $6); free($2); }
-		|	LABEL label_name ';' 					{ doDefineLabel($2); }
-		|	LEVEL level_name op ';'					{ doDefineLevel($2, $3); };
+stmt		:	USERASSIGN level_name ASSIGN user';'			{ doUserAssignLevel($2, $4); free($2); free($4);}
+		|	USERASSIGN level_name label_list ASSIGN user';'	{ doUserAssignLevel($2, $5); doUserAssignLabels($3, $5); free($2); free($3); free($5); }
+		|	FILEASSIGN level_name ASSIGN file';'			{ doFileAssignLevel($2, $4); free($2); free($4); }
+		|   	FILEASSIGN level_name label_list ASSIGN file';'	{ doFileAssignLevel($2, $5); doFileAssignLabels($3, $5); free($2); }
+		|	LABEL label_name';' 					{ doDefineLabel($2); }
+		|	LEVEL level_name op';'					{ doDefineLevel($2, $3); };
 
-label_list	:	'[' labels ']'						{ $$ = $2; };
+label_list	:	'['labels']'						{ $$ = $2; };
 labels		:	label_name						{ doLabelList($1, ""); }
-		|	label_name ',' labels					{ doLabelList($1, $3); };	
+		|	label_name',' labels					{ doLabelList($1, $3); };	
 user		:	id							{ $$ = $1; };
 file		:	id							{ $$ = $1; };
 level_name	:	id							{ $$ = $1; };
 label_name 	:	id							{ $$ = $1; };	
-op	 	:	'(' set_res ')'						{ $$ = $2; };
-op   		:	'(' op_var ')'						{ $$ = $2; };	
+op	 	:	'('set_res')'						{ $$ = $2; };
+op   		:	'('op_var')'						{ $$ = $2; };	
 op_var		:	CMP id							{ doComp($1, $2); };
 set_res		:	SET res							{ doSet($2); };
 res		:	LEVELLIT						{ $$ = $1; };
@@ -85,10 +85,10 @@ int main(int ac, char ** av) {
 	#ifdef TEST
 	printf("Starting Parser Unit Tests...\n\n");
 	for(int i = 1; i < 12; i++) {
+		printf("Starting test %d:\n", i);
 		extern FILE * yyin;
 		char current_file_name[64];
 		sprintf(current_file_name, "./test_files/test%d", i);
-		printf("Current file name: %s\n", current_file_name);
 		if((yyin = fopen(current_file_name, "r")) == NULL) {
 			perror(av[1]);
 			exit(1);

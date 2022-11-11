@@ -9,7 +9,7 @@ level extra-secret (< top-secret);
 
 file-assign secret -> file1.txt;
 
-file-assign confidential [more-access, extra-access] -> file2.txt
+file-assign confidential [more-access, extra-access] -> file2.txt;
 
 user-assign top-secret [additional] -> adam;
 
