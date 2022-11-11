@@ -5,14 +5,14 @@
 /*
  * This is the lexer for the SimpleFlow policy compiler.
  * Author: Daniel Weninger
- * Last Modified: 10/25/2022
+ * Last Modified: 11/10/2022
  */
 
 #include <stdarg.h>
 #include <string.h>
 #include "policy.tab.h"
 
-void yyerror(const char * s);
+void yyerror(char * msg);
 %}
 
 ws		[ \t]+
@@ -44,22 +44,7 @@ digit 		[0-9]
 {comment}	{ yylval.strval = strdup(yytext); };
 {ws}		{ };
 {nl}		{ }; 
-.		{ perror("Error in Lex"); }
+.		{ yyerror("Error in Lex\n"); }
 
 %%
 
-int main(int argc, char **argv) {
-	if(argc > 1) {
-		if(!(yyin = fopen(argv[1], "r"))){
-			perror(argv[1]);
-			return 1;
-		}	
-	}
-
-	yylex();
-}
-
-void yyerror(const char *s)
-{
-             fprintf(stderr, "%d: %s\n", yylineno, s);
-}

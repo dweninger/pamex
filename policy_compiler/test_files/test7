@@ -1,0 +1,4 @@
+level confidential (set restricted);
+label more_access;
+
+file-assign confidential [more_access] -> ./assignment_files/file1.txt

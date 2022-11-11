@@ -1,0 +1,13 @@
+========================================
+University of Wisconsin - La Crosse
+Software Engineering Master's Capstone
+Author: Daniel Weninger
+Last Modified: 11/10/2022
+========================================
+
+
+Testing
+----------
+
+ - To run with pre-defined tests, compile (gcc) with -DTEST
+

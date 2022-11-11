@@ -5,7 +5,7 @@ YACC = bison
 all: parser
 
 parser: semantics.c policy.c policy.tab.c
-	${CC} -o $@ $^
+	${CC} -D TEST -o $@ $^
 
 policy.tab.c policy.tab.h: policy.y
 	${YACC} -vd policy.y		

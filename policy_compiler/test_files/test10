@@ -1,0 +1,15 @@
+level non-confidential (set unrestricted);
+level confidential (set restricted);
+level secret (> confidential);
+label additional;
+label more-access;
+label extra-access;
+level top-secret (> secret);
+level extra-secret (< top-secret);
+
+file-assign secret -> file1.txt;
+
+file-assign confidential [more-access, extra-access] -> file2.txt
+
+user-assign top-secret [additional] -> adam;
+

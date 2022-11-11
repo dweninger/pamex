@@ -5,39 +5,39 @@
 
 #include "semantics.h"
 
-char * doUserAssignLevel(char * levelName, char * user) {
-	return levelName;
+void doUserAssignLevel(char * levelName, char * user) {
+	printf("doUserAssignLevel\n");
 }
 
-char * doUserAssignLabels(char * labelList, char * user) {
-	return labelList;
+void doUserAssignLabels(char * labelList, char * user) {	
+	printf("doUserAssignLabels\n");
 }
 
-char * doFileAssignLevel(char * levelName, char * file) {
-	return levelName;
+void doFileAssignLevel(char * levelName, char * file) {
+	printf("doFileAssignLevel\n");
 }
 
-char * doFileAssignLabels(char * labelList, char * file) {
-	return labelList;
+void doFileAssignLabels(char * labelList, char * file) {
+	printf("doFileAssignLabels\n");
 }
 
-char * doLabelList(char * label, char * labelList) {
-	return label;
+void doLabelList(char * label, char * labelList) {
+	printf("doLabelList\n");
 }
 
-char * doDefineLevel(char * levelName, char * op) {
-	return levelName;
+void doDefineLevel(char * levelName, char * op) {
+	printf("doDefineLevel\n");
 }
 
-char * doDefineLabel(char * labelName) {
-	return labelName;
+void doDefineLabel(char * labelName) {
+	printf("doDefineLabel\n");
 }
 
-char * doComp(double op, char * id) {
-	return id;
+void doComp(double op, char * id) {
+	printf("doComp\n");
 }
 
-char * doSet(char * res) {
-	return res;
+void doSet(char * res) {
+	printf("doSet\n");
 }
 
