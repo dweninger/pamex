@@ -1,11 +1,14 @@
 void yyerror(char * s);
 
 void doUserAssignLevel(char * levelName, char * user);
-void doUserAssignLabels(char * labelList, char * user);
+void doUserAssignLabels(char ** labelList, char * user);
 void doFileAssignLevel(char * levelName, char * file);
-void doFileAssignLabels(char * labelList, char * file);
-void doLabelList(char * label, char * labelList);
-void doDefineLevel(char * levelName, char * op);
+void doFileAssignLabels(char ** labelList, char * file);
+char ** doLabelList(char * labels);
+char * doConcatLabels(char * label, char * labelList);
+void doDefineLevel(char * levelName, int placement);
 void doDefineLabel(char * labelName);
-void doComp(double op, char * id);
-void doSet(char * res);
+int doComp(double op, char * id);
+int doSet(char * res);
+
+

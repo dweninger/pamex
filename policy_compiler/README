@@ -2,12 +2,194 @@
 University of Wisconsin - La Crosse
 Software Engineering Master's Capstone
 Author: Daniel Weninger
-Last Modified: 11/10/2022
+Fall 2022 / Spring 2023
+Last Modified: 12/1/2022
 ========================================
 
+Title: File Security Classification Language
+
+The purpose of the File Security Classification Language is to allow the user to define a hierarchy 
+of levels as well as non-hierarchical labels that are to be easily assigned to both files and users. 
+
+Levels
+----------
+Only a user with a level that is equivalent or higher to a file in the defined hierarchy may 
+access that file.
+
+Labels
+-----------
+In addition to levels, privilidged users may define and assign a non-hierarchical label to users and 
+files. In order for a user to access a file with a particular label, the user must also have that label.
+ 
+Makefile and Compiling Project
+----------
+ - Run "make" in the project file struction to compile the parser
+ - TODO: "make clean"
+ - TODO: "make test"
+
+Running the Code
+----------
+ - Run ./parser <code_file_name> to run the code in regular mode
+ - Run ./parser to run the code in test mode
 
 Testing
 ----------
+ - To run with pre-defined tests, compile (gcc) with -D TEST
+ - TODO: "make test"
 
- - To run with pre-defined tests, compile (gcc) with -DTEST
+Lexer, Keywords, and Varibles
+----------
+Keywords:
+ - level
+ - label
+ - set
+ - file-assign
+ - user-assign
+ - restricted
+ - unrestricted
+
+Operations:
+ - <
+ - >
+ - ->
+
+Variables:
+ - All variables including level, label, file, and user names must start
+	with one of the following ".", "/", or an alphabetic letter, 
+	followed by any combination of alpha-numeric characters, "_", "-", 
+	".", or "/"
+
+
+Parser, and Syntax
+----------
+Comments:
+Comments are all in-line and the line must begin with a "#" like the following:
+
+# This is a comment
+
+
+Definition Section:
+
+Level Definitions:
+ - The first section of the File Security Classification code defines the levels and
+	labels to be used later, including the ordering of the levels.
+ - A level definition comes in two different forms: set and ordered
+ - An ordered definition defines if a level comes before or after another label and
+	a set definition has a set placement in the hierarch. Therefore, you must
+	have a set definition in place before an ordered definition occurs.
+
+
+Level Set Definitions:
+ - A set definition looks like the following:
+
+level <level_name> (set <unrestricted_or_restricted>);
+ 
+ - level and set are both keywords in this instance and must be used verbatum.
+ - <level_name> is a variable name that can be used later (see "Lexer, Keywords, and
+	Variables" section for naming conventions).
+ - "unrestricted" and "restricted" are both key words here. When using the "set" operation,
+	the level must be set to one of those two placements.
+ - "unrestricted" means that any user in the system may access the file with no credentials 
+	necessary.
+ - "restricted" is at the bottom of the placement hierarchy which means that anyone with the 
+	placment of <level_name> or above may access this file.
+
+
+Level Ordered Definitions:
+ - Ordered definitions can be defined to place directly before or after any other defined level
+ - An ordered definition looks like the following:
+
+level <level_name> (> <prev_defined_level_name>);
+
+OR
+
+level <level_name> (< <prev_defined_level_name>);
+
+ - level is again used as a keyword here.
+ - <level_name> is again a variable name that can be used later (see "Lexer, Keywords, and
+	Variables" section for naming conventions).
+ - > is used to define a level that places directly above a predefined level. In other words,
+	a user with access to this newly defined level can access it as well as the predefined
+	level.
+ - < is used to define a level that places directly below a predefined level. In other words,
+	a user with access to this newly defined level can access it but not the predefined
+	level.
+
+
+Label Definitions:
+ - A label is defined to be assigned to files and users later.
+ - A label definition looks like the following:
+
+label <label_name>;
+
+ - "label" is a keyword here and must be used verbatum.
+ - <label_name> is a variable name that can be used later (see "Lexer, Keywords, and
+	Variables" section for naming conventions).
+
+
+Assignment Section:
+ - Once a level or a label is defined, it may then be assigned to a file and/or a user
+ - A file may only have one level but may have multiple labels
+ - A file may only be assigned a label if it has a level as well
+ - A user may only have one level but may have multiple labels
+
+
+File Assignments:
+
+ - A file assignment looks like the following:
+
+file-assign <level_name> [[<label_list>]] -> <file_name>;
+
+ - file-assign is a keyword and must be used verbatum
+ - <level_name> is the name of an already defined level
+ - [<label_list>] is an optional list of labels. A file can be assigned one or more labels which
+	are displayed in square brackets and delimited by ","s like the following:
+
+[label1, label2, label3]
+
+ - -> is an operand which means to assign the specified level and label names to a file
+ - <file_name> is the path to a file in the system
+
+
+User Assignments:
+ - A user assignment looks like the following:
+
+user-assign <level_name> [[<label_list>]] -> <user_name>;
+
+ - user-assign is a keyword and must be used verbatum
+ - <level_name> is the name of an already defined level
+ - [<label_list>] is an optional list of labels. A user can be assigned one or more labels which
+        are displayed in square brackets and delimited by ","s.
+
+ - -> is an operand which means to assign the specified level and label names to a user
+ - <user_name> is the name of a user that is in the linux system
+
+
+Example File:
+-------------
+# This is a comment
+
+# Define Levels and Labels #
+level non-confidential (set unrestricted);
+level confidential (set restricted);
+level secret (> confidential);
+label additional;
+label more-access;
+label extra-access;
+level top-secret (> secret);
+level extra-secret (< top-secret);
+
+# Assign Levels and Labels to Files #
+file-assign secret -> file1.txt;
+
+file-assign confidential [more-access, extra-access] -> file2.txt
+
+user-assign top-secret [additional] -> adam;
+
+
+How the File Security Classification Language assigns levels and labels to files:
+---------
+ - TODO
+ - Extended attributes??
+
 
