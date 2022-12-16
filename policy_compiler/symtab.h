@@ -3,41 +3,52 @@
 
 enum type{LEVEL, LABEL, USER_NAME, FILE_NAME};
 
-struct Symbol {
-	char * name;
-	void * reflist;
-	int type;
-} Symbol;
-
-struct LevelRef {
+// Classification marking
+typedef struct levelRef {
 	int placement; // Placement num in hierarchy
-	struct LevelRef * next;
+	union utype * next;
 	int lineno;
-} LevelRef;
+} levelRef;
 
-struct LabelRef {
-	struct LabelRef * next;
+// Control marking
+typedef struct labelRef {
+	union utype * next;
 	int lineno;	
-} LabelRef;
+} labelRef;
 
-struct UserRef {
-	struct UserRef * next;
+typedef struct userRef {
+	union utype * next;
 	int lineno;
-} UserRef;
+} userRef;
 
-struct FileRef {
-	struct FileRef * next;
+typedef struct fileRef {
+	union utype * next;
 	int lineno;
-} FileRef;
+} fileRef;
 
-struct Symbol * levelplacements[1024];
+typedef union utype {
+	levelRef * level;
+	labelRef * label;
+	userRef * user;
+	fileRef * file;
+} utype;
 
-struct Symbol symtab[NHASH];
+typedef struct symbol {
+	int newSym;
+	char * name;
+	utype * reflist;
+	enum type type;
+} symbol;
 
-struct Symbol * lookup(char *, int type);
+//typedef struct levelplacements {
+//	int size;
+//	symbol * levelplacementslist[1024];
+//} levelplacements;
+
+symbol * lookup(char *, enum type);
 void addlevel(int, int, char *);
 void addlabel(int, char *);
 void adduser(int, char *);
 void addfile(int, char *);
-char * leveltojson(struct Symbol * sym);
-char * labeltojson(struct Symbol * sym);
+char * leveltojson(symbol * sym);
+char * labeltojson(symbol * sym);

@@ -15,6 +15,7 @@
 extern int yylex();
 extern int yylineno();
 extern int yytext();
+int printFlag = 0;
 %}
 
 %union {
@@ -26,7 +27,7 @@ extern int yytext();
 }
 
 %type <strval> id
-%type <strval> res
+%type <intval> res
 %type <intval> set_res
 %type <intval> op_var
 %type <intval> op
@@ -39,7 +40,7 @@ extern int yytext();
 %type <strval> stmt
 
 %token <strval> ID
-%token <strval> LEVELLIT
+%token <intval> LEVELLIT
 %token <strval> USERASSIGN
 %token <strval> LEVEL
 %token <strval> LABEL
@@ -65,8 +66,10 @@ stmt		:	USERASSIGN level_name ASSIGN user';'			{ doUserAssignLevel($2, $4); free
 		|	LABEL label_name';' 					{ doDefineLabel($2); }
 		|	LEVEL level_name op';'					{ doDefineLevel($2, $3); };
 label_list	:	'['labels']'						{ $$ = doLabelList($2); };
-labels		:	label_name						{ $$ = doConcatLabels($1, ""); }
-		|	label_name',' labels					{ $$ = doConcatLabels($1, $3); };	
+labels		:	label_name						{ $$ = doConcatLabels($1); }
+		|	label_name',' labels					{ $$ = doConcatLabels($1); };	
+//labels		: 	label_name						{ $$ = 1; }
+//		|	label_name',' labels					{ $$ = 1 + $3; };
 user		:	id							{ $$ = $1; };
 file		:	id							{ $$ = $1; };
 level_name	:	id							{ $$ = $1; };
@@ -83,6 +86,10 @@ id 		: 	ID							{ $$ = $1; };
 int main(int ac, char ** av) {	
 
 	#ifdef TEST
+	if(ac != 2 || (strcmp(av[1], "-p") != 0 && strcmp(av[1], "-k") != 0)) {
+		fprintf(stderr, "usage: %s (-p | -k)\n", av[0]);
+		exit(EXIT_FAILURE);
+	}
 	printf("Starting Parser Unit Tests...\n\n");
 	for(int i = 1; i < 12; i++) {
 		printf("Starting test %d:\n", i);
@@ -103,12 +110,24 @@ int main(int ac, char ** av) {
 	}
 
 	#else
+	if(ac != 3 || (strcmp(av[2], "-p") != 0 && strcmp(av[2], "-k") != 0)) {
+		fprintf(stderr, "usage: %s filename (-p | -k)\n", av[0]);
+		exit(EXIT_FAILURE);
+	}
+
 	extern FILE * yyin;
-	if(ac > 1 && (yyin = fopen(av[1], "r")) == NULL) {
+	if((yyin = fopen(av[1], "r")) == NULL) {
 		perror(av[1]);
 		exit(1);
 	}
 
+	if(strcmp(av[2], "-p") == 0) {
+		printFlag = 1;
+		FILE * outFile = fopen("policy-out.txt", "w+");
+		fprintf(outFile, "");
+		fflush(outFile);
+	}
+	
 	if(!yyparse()) {
 		printf("Policy parse worked.\n");
 	} else {

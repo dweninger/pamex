@@ -7,6 +7,12 @@
 #include "semantics.h"
 #include "symtab.h"
 
+extern int levels;
+extern symbol * levelplacements[1024];
+extern symbol symtab[NHASH];
+extern int printFlag;
+char * gLabelList;
+
 void shiftLevelPlacements(int pos);
 
 
@@ -14,14 +20,27 @@ void shiftLevelPlacements(int pos);
  * TODO
  */
 void doUserAssignLevel(char * levelName, char * user) {
-	printf("doUserAssignLevel\n");
+	printf("\ndoUserAssignLevel\n");
+	symbol * sym = lookup(levelName, LEVEL);
+	char * leveljson = leveltojson(sym);
+	
+	FILE * outFile = fopen("policy-out.txt", "a");
+	fprintf(outFile, "USER_LEVEL %s %s\n", user, leveljson);
+	fclose(outFile);
 }
 
 /**
  * TODO
  */
 void doUserAssignLabels(char ** labelList, char * user) {	
-	printf("doUserAssignLabels\n");
+	printf("\ndoUserAssignLabels\n");
+	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
+	for(int i = 0; i < labelListSize; i++) {
+		printf("labelList[i]: %s\n", labelList[i]);
+		FILE * outFile = fopen("policy-out.txt", "a");
+		fprintf(outFile, "USER_LABELS %s %s\n", user, labelList[i]);
+		fclose(outFile);
+	}
 }
 
 /**
@@ -30,14 +49,20 @@ void doUserAssignLabels(char ** labelList, char * user) {
  * levelName  the name of the level that will be added to the extended attributes
  * file  the path of the file that the level will be assigned to
  */
+
 void doFileAssignLevel(char * levelName, char * file) {
-	struct Symbol * sym = lookup(levelName, LEVEL);
+	printf("\ndoFileAssignLevel\n");
+	symbol * sym = lookup(levelName, LEVEL);
 	char * leveljson = leveltojson(sym);
+	
+	FILE * outFile = fopen("policy-out.txt", "a");
+	fprintf(outFile, "FILE_LEVEL %s %s\n", file, leveljson);
+	fclose(outFile);
 	// set file extended attribute to have level JSON value
 	// fsc = file security classification
-	if(setxattr(file, "security.fsc.level", leveljson, strlen(leveljson), 0) == -1) {
-		exit(EXIT_FAILURE);
-	}
+	//if(setxattr(file, "security.fsc.level", leveljson, strlen(leveljson), 0) == -1) {
+	//	exit(EXIT_FAILURE);
+	//}
 }
 
 /**
@@ -47,22 +72,34 @@ void doFileAssignLevel(char * levelName, char * file) {
  * file  the path of the file that the labels will be assigned to
  */
 void doFileAssignLabels(char ** labelList, char * file) {
-	char * labeljson = malloc(sizeof(1024));
+	printf("\ndoFileAssignLabels\n");
+	//char * labeljson = malloc(sizeof(1024));
 	// build label JSON
-	strcat(labeljson, "[");
-	int labelListSize = sizeof(labelList - sizeof(char *));
-	for(int i = 0; i < labelListSize; i++) {
-		strcat(labeljson, labeltojson(lookup(labelList[i], LABEL)));
-		if((i + 1) < labelListSize) {
-			strcat(labeljson, ", ");
-		}
+	//strcat(labeljson, "[");
+	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
+	printf("LABEL LIST SIZE: %d %d\n", sizeof(labelList), sizeof(labelList[0]));
+	int index = 0;
+	char * cur = labelList[index];
+	while(cur != NULL) {
+		FILE * outFile = fopen("policy-out.txt", "a");
+		fprintf(outFile, "FILE_LABELS %s %s\n", file, labelList[index]);
+		fclose(outFile);
+
+		index++;
+		cur = labelList[index];
 	}
-	strcat(labeljson, "]");
+	//	strcat(labeljson, labeltojson(lookup(labelList[i], LABEL)));
+	//	if((i + 1) < labelListSize) {
+	//		strcat(labeljson, ", ");
+	//	}
+	//strcat(labeljson, "]");
+	
+		
 	// set file extended attribute to have label JSON value
 	// fsc = file security classification
-	if(setxattr(file, "security.fsc.labels", labeljson, strlen(labeljson), 0) == -1) {
-		exit(EXIT_FAILURE);
-	}
+	//if(setxattr(file, "security.fsc.labels", labeljson, strlen(labeljson), 0) == -1) {	
+	//	exit(EXIT_FAILURE);
+	//}
 }
 
 /**
@@ -72,9 +109,10 @@ void doFileAssignLabels(char ** labelList, char * file) {
  * returns labelArr
  */
 char ** doLabelList(char * labelList) {
+	printf("\ndoLabelList: %s\n", labelList);
 	char ** labelArr;
 	labelArr = (char**)malloc(sizeof(char *));
-	int index = 1;
+	int index = 0;
 	char * token = strtok(labelList, ", ");
 	labelArr[0] = strdup(token);
 	while(token != NULL) {
@@ -83,6 +121,11 @@ char ** doLabelList(char * labelList) {
 		token = strtok(NULL, ", ");
 		index ++;
 	}
+	printf("checklabelArray\n");
+	printf("labelArr[1]: %s\n", labelArr[1]);
+	gLabelList = "";
+	//free(labelList);
+	gLabelList = malloc(sizeof(char *));
 	return labelArr;
 }
 
@@ -92,10 +135,26 @@ char ** doLabelList(char * labelList) {
  * label  the new label to be added
  * labelList  the existing string representing a list of labels
  */
-char * doConcatLabels(char * label, char * labelList) {
-	char * labels = malloc( sizeof(char *));
-	strcat(labels, strdup(label));
-	strcat(labels, strdup(labelList));
+char * doConcatLabels(char * label) {
+	printf("\ndoConcatLabels\n");
+	printf("label: %s\n", label);
+	//printf("labels: %s\n", labelList);
+	
+	printf("Label list 1: %s\n", gLabelList);
+	if(strlen(gLabelList) > 0) {
+		strcat(gLabelList, ", ");
+	}
+	strcat(gLabelList, label);
+
+	printf("Label list 2: %s\n", gLabelList);
+	char * labels = malloc(sizeof(char *));
+	labels = strdup(gLabelList);
+	//strcat(labels, strdup(label));
+	//if(strlen(labelList) > 0) {
+	//	strcat(labels, strdup(labelList));
+	//}
+	
+	printf("concated labels: %s\n", labels);
 	return labels;
 }
 
@@ -105,22 +164,31 @@ char * doConcatLabels(char * label, char * labelList) {
  * levelName  the name of the level to be added
  * placement  the hierarchy ranking of the level to be added
  */
-void doDefineLevel(char * levelName, int placement) {
-	// Find if level var already exists
-	struct Symbol * sym = lookup(levelName, LEVEL);
+void doDefineLevel(char * levelName, int placement) {	
+	printf("\ndoDefineLevel %s %d %d\n", levelName, placement, levels);
+	// Find if level in symtab already exists or create new symbol for level
+	symbol * sym = lookup(levelName, LEVEL);
+	
+	printf("shift level placements\n");
 	// check if levels need to shift placements
 	if(levelplacements[placement]) {
 		shiftLevelPlacements(placement);
 	}
-	if(sym) {
-		// level is being re-defined. allow?
-	} else {
+	
+	printf("check new sym\n");
+	if(sym->newSym) {
 		// new level being added to symtab
 		addlevel(0, placement, levelName);
 		sym = lookup(levelName, LEVEL);
-	}	
+
+	} else {
+		// level is being re-defined. allow?
+	}
+	
+	printf("assign level placements at placement\n");
 	// add level to placements array
 	levelplacements[placement] = sym;
+	levels ++;
 }
 
 /**
@@ -129,11 +197,20 @@ void doDefineLevel(char * levelName, int placement) {
  * pos  the position that the new level should be at
  */
 void shiftLevelPlacements(int pos) {
-	int i = 0;
-	for(i = sizeof(levelplacements - sizeof(int)); i > pos; i--) {
+	printf("\ndoShiftLevelPlacements %d\n", pos);
+	int i;
+	for(i = levels - 1; i > pos; i--) {
+		printf("LEVEL: %d\n", i);
+		levelplacements[i]->reflist[0].level->placement = levelplacements[i]->reflist[0].level->placement - 1;
 		levelplacements[i] = levelplacements[i - 1];
 	}
 	levelplacements[i] = NULL;
+}
+
+static void printLevelPlacements() {
+	for(int i = 0; i < sizeof(levelplacements) / sizeof(levelplacements[0]); i++) {
+		printf("LP: [%d, %s]", i, levelplacements[i]->name);
+	}
 }
 
 /**
@@ -141,14 +218,17 @@ void shiftLevelPlacements(int pos) {
  * labelName  name of a new label 
  */
 void doDefineLabel(char * labelName) {
-	struct Symbol * sym = lookup(labelName, LABEL);
-	if(sym){
-		// label is being re-defined. Don't allow
-		exit(EXIT_FAILURE);
-	} else {
+	printf("\ndoDefineLabel\n");
+	symbol * sym = lookup(labelName, LABEL);
+	if(sym->newSym){
 		// add new label into symbol table
 		addlabel(0, labelName);
+	} else {
+		// label is being re-defined. Don't allow
+		perror("Error: cannot redefine label");
+		exit(EXIT_FAILURE);
 	}
+	gLabelList = malloc(sizeof(char *));
 }
 
 /**
@@ -159,20 +239,24 @@ void doDefineLabel(char * labelName) {
  * id  the id of the level that the operator is refering to
  * returns  int containing the level placement
  */
-int doComp(double op, char * id) {
+int doComp(int op, char * id) {
+	printf("\ndoComp: %d, %s\n", op, id);
 	int curPlacement = -1;
-	struct Symbol * sym = lookup(id, LEVEL);
+	symbol * sym = lookup(id, LEVEL);
 	if(op == 1) {	
 		// <
-		int tempPlacement = sym->reflist[0]->placement - 1;
+		int tempPlacement = sym->reflist[0].level->placement;
 		// TODO: check tempPlacement is not below 1
 		curPlacement = tempPlacement;
 	} else if(op == 2) {
 		// >
-		curPlacement = sym->reflist[0]->placement + 1;
+		printf("doComp Sym Found: %s\n", sym->name);
+		curPlacement = sym->reflist[0].level->placement + 1;
 	} else {
-		printf("comparison operator error\n");
+		perror("Comparison operator error\n");
+		exit(EXIT_FAILURE);
 	}
+	printf("doComp Placement: %d\n", curPlacement);
 
 	return curPlacement;
 }
@@ -183,19 +267,15 @@ int doComp(double op, char * id) {
  * res  checks if the level is restricted or unrestricted
  * returns  int containing the level placement
  */
-int doSet(char * res) {
-	int curPlacement = -1;
+int doSet(int res) {
+	printf("\ndoSet: %d\n", res);
 	// check if level is unrestricted or restricted
-	if(strcmp(res, "unrestricted") == 0) {
-		// unrestricted placement = 0
-		curPlacement = 0;
-	} else if (strcmp(res, "restricted") == 0) {
-		// restricted placement = 1
-		curPlacement = 1;
-	} else {
-		printf("error in doSet\n");
+	if(res != 0 && res != 1) {
+		perror("Error setting level\n");
+		exit(EXIT_FAILURE);
 	}
-	return curPlacement;
+	// return restricted or unrestricted to be used later for placement
+	return res;
 }
 
 

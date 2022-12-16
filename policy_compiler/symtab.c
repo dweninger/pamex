@@ -3,25 +3,47 @@
 #include <string.h>
 #include "symtab.h"
 
+int levels;
+symbol * levelplacements[1024];
+symbol symtab[NHASH];
+
 static unsigned symhash(char * sym) {
+	printf("symhash %s, %d\n", sym, strlen(sym));
 	unsigned int hash = 0;
 	unsigned c;
 
-	while(c = *sym++) hash = hash*9 ^ c;
+	for(int i = 0; i < strlen(sym); i++) {
+		c = (int)sym[i];
+		hash = hash * 9 ^ c;
+	}	
+
+	//while(c = *sym++) {
+	//	printf("symhash while: %c\n", c); 
+	//	hash = hash*9 ^ c;
+	//}
+	printf("HASH: %u\n", hash);
 	return hash;
 }
 
-struct Symbol * lookup(char * sym, int type) {
-	struct Symbol * sp = &symtab[symhash(sym)%NHASH];
+symbol * lookup(char * sym, enum type type) {
+	printf("lookup\n");
+	symbol * sp = &symtab[symhash(sym)%NHASH];
 	int scount = NHASH;
-
+	printf("Lookup\n");
 	while(--scount >= 0) {
-		if(sp->name && !strcasecmp(sp->name, sym)) return sp;
-
+		// Found symbol in table
+		if(sp->name && !strcasecmp(sp->name, sym)) {
+			sp->newSym = 0;
+		       	printf("SP NAME1: %s\n", sp->name);
+			return sp;
+		}
+		// New symbol
 		if(!sp->name) {
+			sp->newSym = 1;
 			sp->name = strdup(sym);
-			sp->reflist = 0;
+			sp->reflist = malloc(sizeof(utype *));
 			sp->type = type;
+			printf("SP NAME2: %s, %d\n", sp->name, type);
 			return sp;
 		}
 
@@ -33,76 +55,103 @@ struct Symbol * lookup(char * sym, int type) {
 }
 
 void addlevel(int lineno, int placement, char * word) {
-	struct LevelRef * lr;
-	struct Symbol * sp = lookup(word, LEVEL);
+	printf("add level\n");
+	levelRef * lr;
+	symbol * sp = lookup(word, LEVEL);
+
+	// reference found on same line. do not add to symtab
+	if(sp->reflist[0].level &&
+	   sp->reflist[0].level->lineno == lineno) return; 
+
+	lr = malloc(sizeof(levelRef *));
 	
-	// reference found on same line
-	if(sp->reflist &&
-	   sp->reflist->lineno == lineno) return; 
-	lr = malloc(sizeof(struct LevelRef *));
-	if(!lr) { fputs("out of space\n", stderr); abort(); }
+	if(!lr) { 
+		fputs("out of space\n", stderr); 
+		abort(); 
+	}
+	
 	lr->next = sp->reflist;
 	lr->lineno = lineno;
 	lr->placement = placement;
-	sp->reflist = lr;
+	sp->reflist->level = lr;
 }
 
 void addlabel(int lineno, char * word) {
-	struct LabelRef * lr;
-	struct Symbol * sp = lookup(word, LABEL);
+	printf("add label\n");
+	labelRef * lr;
+	symbol * sp = lookup(word, LABEL);
 	
 	// reference found on same line
-	if(sp->reflist &&
-	   sp->reflist->lineno == lineno) return; 
-	lr = malloc(sizeof(struct LabelRef *));
-	if(!lr) { fputs("out of space\n", stderr); abort(); }
+	if(sp->reflist[0].label &&
+	   sp->reflist[0].label->lineno == lineno) return; 
+	
+	lr = malloc(sizeof(labelRef *));
+	
+	if(!lr) { 
+		fputs("out of space\n", stderr); 
+		abort(); 
+	}
+	
 	lr->next = sp->reflist;
 	lr->lineno = lineno;
-	sp->reflist = lr;
+	sp->reflist->label = lr;
 }
 
 void adduser(int lineno, char * word) {
-	struct UserRef * ur;
-	struct Symbol * sp = lookup(word, USER_NAME);
+	userRef * ur;
+	symbol * sp = lookup(word, USER_NAME);
 	
 	// reference found on same line
 	if(sp->reflist &&
-	   sp->reflist->lineno == lineno) return; 
-	ur = malloc(sizeof(struct UserRef *));
-	if(!ur) { fputs("out of space\n", stderr); abort(); }
+	   sp->reflist->user->lineno == lineno) return; 
+	ur = malloc(sizeof(struct userRef *));
+	
+	if(!ur) { 
+		fputs("out of space\n", stderr); 
+		abort(); 
+	}
+	
 	ur->next = sp->reflist;
 	ur->lineno = lineno;
-	sp->reflist = ur;
+	sp->reflist->user = ur;
 }
 
 void addfile(int lineno, char * word) {
-	struct FileRef * fr;
-	struct Symbol * sp = lookup(word, FILE_NAME);
+	fileRef * fr;
+	symbol * sp = lookup(word, FILE_NAME);
 	
 	// reference found on same line
 	if(sp->reflist &&
-	   sp->reflist->lineno == lineno) return; 
-	fr = malloc(sizeof(struct FileRef *));
-	if(!fr) { fputs("out of space\n", stderr); abort(); }
+	   sp->reflist->file->lineno == lineno) return; 
+	
+	fr = malloc(sizeof(fileRef *));
+	
+	if(!fr) { 
+		fputs("out of space\n", stderr); 
+		abort(); 
+	}
+	
 	fr->next = sp->reflist;
 	fr->lineno = lineno;
-	sp->reflist = fr;
+	sp->reflist->file = fr;
 }
 
-char * leveltojson(struct Symbol * sym) {
-	if(sym->reflist[0]->type != LEVEL) {
+char * leveltojson(symbol * sym) {
+	if(sym->reflist[0].level == NULL) {
 		return "";
 	}
 	char * jsondata = malloc(sizeof(100));
-	snprintf(jsondata, sizeof(jsondata), "{\"%s\" : \"%s\" \"%s\" : %d}", "name", sym->name, "placement", sym->reflist[0]->placement);
+	sprintf(jsondata, "{\"%s\":\"%s\",\"%s\":%d}", "name", strdup(sym->name), "placement", sym->reflist[0].level->placement);
+	printf("Level JSON Data: %s\n", jsondata);
 	return jsondata;
 }
 
-char * labeltojson(struct Symbol * sym) {
-	if(sym->reflist[0]->type != LABEL) {
+char * labeltojson(symbol * sym) {
+	printf("LabelToJSON: %s\n", strdup(sym->name));
+	if(sym->reflist[0].label == NULL) {
 		return "";
 	}
 	char * jsondata = malloc(sizeof(100));
-	snprintf(jsondata, sizeof(jsondata), "{\"%s\" : \"%s\"}", "name", sym->name);
+	snprintf(jsondata, sizeof(jsondata), "{\"%s\":\"%s\"}", "name", strdup(sym->name));
 	return jsondata;
 }
