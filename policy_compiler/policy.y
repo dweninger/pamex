@@ -68,8 +68,6 @@ stmt		:	USERASSIGN level_name ASSIGN user';'			{ doUserAssignLevel($2, $4); free
 label_list	:	'['labels']'						{ $$ = doLabelList($2); };
 labels		:	label_name						{ $$ = doConcatLabels($1); }
 		|	label_name',' labels					{ $$ = doConcatLabels($1); };	
-//labels		: 	label_name						{ $$ = 1; }
-//		|	label_name',' labels					{ $$ = 1 + $3; };
 user		:	id							{ $$ = $1; };
 file		:	id							{ $$ = $1; };
 level_name	:	id							{ $$ = $1; };
@@ -126,6 +124,9 @@ int main(int ac, char ** av) {
 		FILE * outFile = fopen("policy-out.txt", "w+");
 		fprintf(outFile, "");
 		fflush(outFile);
+	} else {
+		printf("Kernel reading not yet implemented.\n");
+		exit(EXIT_FAILURE);	
 	}
 	
 	if(!yyparse()) {

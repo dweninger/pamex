@@ -34,7 +34,6 @@ int main(int ac, char ** av) {
 
 	// Read filein line by line	
 	while((read = getline(&line, &len, filein)) != -1) {
-		
 		// read line data and separate into vars based on space delimiter
 		char * assignmentType;
 		char * assignee;
@@ -47,7 +46,6 @@ int main(int ac, char ** av) {
 		assignmentData = strdup(token);
 		// Remove trailing newline
 		assignmentData[strcspn(assignmentData, "\r\n")] = 0;	
-		printf("Assignment Type: %s, Assignee: %s, AssignmentData: %s\n", assignmentType, assignee,assignmentData);
 		// Check which operation to do based on line prefix	
 		if (strcmp(assignmentType, "FILE_LEVEL") == 0) {
 			assignLevelToFile(assignee, assignmentData, pathToFiles);			
@@ -69,7 +67,6 @@ int main(int ac, char ** av) {
 	}
 	fclose(filein);	
 	printf("Policy tool worked.\n");
-
 }
 
 void assignLevelToFile(char * assignee, char * assignmentData, char * pathToFiles) {
@@ -132,7 +129,6 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 		strcat(data, assignmentData);
 		strcat(data, "\"}]}");
 		
-
 		if(setxattr(filePath, "security.fsc.labels", data, strlen(data), 0) == -1) {
 			fprintf(stderr, "Error setting label attribute %s for file %s - Errno: %d\n", data, filePath, errno);
 			exit(EXIT_FAILURE);
@@ -154,10 +150,8 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 			}
 			free(data);
 		}
-	
 	}
 	filePath = "";
-	printf("done with file labels\n");
 }
 
 int labelExistsInFile(char * checkLabel, char * fileJson) {
@@ -196,6 +190,7 @@ int fileAlreadyAccessed(char * file) {
 		index++;
 		curFile = filePaths[index];
 	}
+
 	filePaths = (char **)realloc(filePaths, (index + 1) * sizeof(char *));
 	filePaths[index] = strdup(file);
 	return 0;

@@ -7,8 +7,13 @@ int levels;
 symbol * levelplacements[1024];
 symbol symtab[NHASH];
 
+/**
+ * symhash - the hash function for the symbol hash table
+ * sym  the name of the symbol that the hash is being calculated for
+ * return hash - returns an unsigned int of the hash value (what placement the
+ * 		 symbol is located in the symbol table)
+ */
 static unsigned symhash(char * sym) {
-	printf("symhash %s, %d\n", sym, strlen(sym));
 	unsigned int hash = 0;
 	unsigned c;
 
@@ -17,24 +22,22 @@ static unsigned symhash(char * sym) {
 		hash = hash * 9 ^ c;
 	}	
 
-	//while(c = *sym++) {
-	//	printf("symhash while: %c\n", c); 
-	//	hash = hash*9 ^ c;
-	//}
-	printf("HASH: %u\n", hash);
 	return hash;
 }
 
+/**
+ * lookup - looks up a symbol in the symbol table by the symbol's
+ * 	    name and type
+ * sym  the name of the symbol being looked up
+ * type  the type of the symbol being looked up (file, user, label, or level)
+ */
 symbol * lookup(char * sym, enum type type) {
-	printf("lookup\n");
 	symbol * sp = &symtab[symhash(sym)%NHASH];
 	int scount = NHASH;
-	printf("Lookup\n");
 	while(--scount >= 0) {
 		// Found symbol in table
 		if(sp->name && !strcasecmp(sp->name, sym)) {
 			sp->newSym = 0;
-		       	printf("SP NAME1: %s\n", sp->name);
 			return sp;
 		}
 		// New symbol
@@ -43,7 +46,6 @@ symbol * lookup(char * sym, enum type type) {
 			sp->name = strdup(sym);
 			sp->reflist = malloc(sizeof(utype *));
 			sp->type = type;
-			printf("SP NAME2: %s, %d\n", sp->name, type);
 			return sp;
 		}
 
@@ -54,8 +56,13 @@ symbol * lookup(char * sym, enum type type) {
 	abort(); // Table full
 }
 
+
+/**
+ * addlevel - add symbol of the type level to the symbol table
+ * lineno  the line number that the level symbol is on in the input file
+ * word  the name of the symbol being added
+ */
 void addlevel(int lineno, int placement, char * word) {
-	printf("add level\n");
 	levelRef * lr;
 	symbol * sp = lookup(word, LEVEL);
 
@@ -76,8 +83,12 @@ void addlevel(int lineno, int placement, char * word) {
 	sp->reflist->level = lr;
 }
 
+/**
+ * addlabel - add symbol of the type label to the symbol table
+ * lineno  the line number that the label symbol is on in the input file
+ * word  the name of the symbol being added
+ */
 void addlabel(int lineno, char * word) {
-	printf("add label\n");
 	labelRef * lr;
 	symbol * sp = lookup(word, LABEL);
 	
@@ -97,6 +108,11 @@ void addlabel(int lineno, char * word) {
 	sp->reflist->label = lr;
 }
 
+/**
+ * adduser - add symbol of type user to the symbol table
+ * lineno  the line number that the user symbol is on in the input file
+ * word  the name of the symbol being added
+ */
 void adduser(int lineno, char * word) {
 	userRef * ur;
 	symbol * sp = lookup(word, USER_NAME);
@@ -116,6 +132,11 @@ void adduser(int lineno, char * word) {
 	sp->reflist->user = ur;
 }
 
+/**
+ * addfile - add symbol of type file to the symbol table
+ * lineno  the line number that the file symbol is on in the input file
+ * word  the name of the symbol being added
+ */
 void addfile(int lineno, char * word) {
 	fileRef * fr;
 	symbol * sp = lookup(word, FILE_NAME);
@@ -136,18 +157,26 @@ void addfile(int lineno, char * word) {
 	sp->reflist->file = fr;
 }
 
+/**
+ * leveltojson - return json data from the level symbol passed in
+ * sym  the symbol of type level
+ * returns string representing JSON data for the level symbol
+ */
 char * leveltojson(symbol * sym) {
 	if(sym->reflist[0].level == NULL) {
 		return "";
 	}
 	char * jsondata = malloc(sizeof(100));
 	sprintf(jsondata, "{\"%s\":\"%s\",\"%s\":%d}", "name", strdup(sym->name), "placement", sym->reflist[0].level->placement);
-	printf("Level JSON Data: %s\n", jsondata);
 	return jsondata;
 }
 
+/**
+ * labeltojson - return json data from the label symbol passed in
+ * sym  the symbol of type label
+ * returns string representing JSON data for the label symbol
+ */
 char * labeltojson(symbol * sym) {
-	printf("LabelToJSON: %s\n", strdup(sym->name));
 	if(sym->reflist[0].label == NULL) {
 		return "";
 	}
