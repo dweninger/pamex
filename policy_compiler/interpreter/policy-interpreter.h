@@ -5,3 +5,5 @@ int labelExistsInFile(char * checkLabel, char * fileJson);
 int fileAlreadyAccessed(char * file);
 void assignLevelToUser(char * assignee, char * assignmentData);
 void collectLabelForUser(char * assignee, char * assignmentData);
+void setxattrErrorPrints();
+void getxattrErrorPrints();

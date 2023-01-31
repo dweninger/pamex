@@ -158,6 +158,20 @@ void addfile(int lineno, char * word) {
 }
 
 /**
+ * leveldataformat - return level data similar to selinux. <level_name>:<level_placement>
+ * sym  the symbol of type level
+ * returns string representing data for the level symbol delimited by :
+ */
+char * leveldataformat(symbol * sym) {
+	if(sym->reflist[0].level == NULL) {
+		return "";
+	}
+	char * levelData = malloc(200);
+	sprintf(levelData, "%s:%d", strdup(sym->name), sym->reflist[0].level->placement);
+	return levelData;
+}
+
+/**
  * leveltojson - return json data from the level symbol passed in
  * sym  the symbol of type level
  * returns string representing JSON data for the level symbol

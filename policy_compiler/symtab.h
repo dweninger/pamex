@@ -52,3 +52,4 @@ void adduser(int, char *);
 void addfile(int, char *);
 char * leveltojson(symbol * sym);
 char * labeltojson(symbol * sym);
+char * leveldataformat(symbol * sym);

@@ -22,10 +22,10 @@ void shiftLevelPlacements(int pos);
  */
 void doUserAssignLevel(char * levelName, char * user) {
 	symbol * sym = lookup(levelName, LEVEL);
-	char * leveljson = leveltojson(sym);
+	char * leveldata = leveldataformat(sym);
 	
 	FILE * outFile = fopen("policy-out.txt", "a");
-	fprintf(outFile, "USER_LEVEL %s %s\n", user, leveljson);
+	fprintf(outFile, "USER_LEVEL %s %s\n", user, leveldata);
 	fclose(outFile);
 }
 
@@ -52,10 +52,10 @@ void doUserAssignLabels(char ** labelList, char * user) {
 
 void doFileAssignLevel(char * levelName, char * file) {
 	symbol * sym = lookup(levelName, LEVEL);
-	char * leveljson = leveltojson(sym);
+	char * leveldata = leveldataformat(sym);
 	
 	FILE * outFile = fopen("policy-out.txt", "a");
-	fprintf(outFile, "FILE_LEVEL %s %s\n", file, leveljson);
+	fprintf(outFile, "FILE_LEVEL %s %s\n", file, leveldata);
 	fclose(outFile);
 }
 
