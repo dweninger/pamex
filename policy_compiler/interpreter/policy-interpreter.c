@@ -138,16 +138,10 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 	// If the file does not already have a label attribute, create it
 	// else, add to existing file label attribute
 	if(!xattrSize) {
-		//char * jsonPrefix = "{\"labels\":[{\"name\":\"";
-		//char * jsonPostfix = "\"}]}";
-		//size_t dataLen = strlen(jsonPrefix) + strlen(jsonPostfix) + strlen(assignmentData) + 1;
 		size_t dataLen = strlen(assignmentData) + 1;
 		char * data = malloc(dataLen * sizeof(char));
 
 		// Build JSON
-		//strcpy(data, jsonPrefix);
-		//strcat(data, assignmentData);
-		//strcat(data, jsonPostfix);
 		strcpy(data, assignmentData);
 
 		if(setxattr(filePath, "security.fsc.labels", data, strlen(data), 0) == -1) {
@@ -157,19 +151,11 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 		free(data);
 	} else {
 		if(!labelExistsInFile(assignmentData, xattr)) {
-			//char * jsonPrefix = ",{\"name\":\"";
-			//char * jsonPostfix = "\"}]}";
-			//char * token = strtok(xattr, "]}");
 			char * delimiter = ":";
-			//size_t dataLen = strlen(jsonPrefix) + strlen(jsonPostfix) + strlen(assignmentData) + strlen(token) + 1;
 			size_t dataLen = strlen(assignmentData) + strlen(xattr) + strlen(delimiter) + 1;
 			char * data = malloc(dataLen * sizeof(char));
 
 			// Build JSON
-			//strcpy(data, token);
-			//strcat(data, jsonPrefix);
-			//strcat(data, assignmentData);
-			//strcat(data, jsonPostfix);
 			strcpy(data, xattr);
 			strcat(data, delimiter);
 			strcat(data, assignmentData);
@@ -187,16 +173,11 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 int labelExistsInFile(char * checkLabel, char * fileJson) {
 	regex_t reegex;
 	// Build JSON object to search for
-	//char * jsonPrefix = "{\\\"name\\\":\\\"";
-	//char * jsonPostfix = "\\\"}";
-	//size_t dataLen = strlen(jsonPrefix) + strlen(jsonPostfix) + strlen(checkLabel) + 1;
 	char * prefix = "({|:)";
 	char * postfix = "(:|})";
 	size_t dataLen = strlen(checkLabel) + strlen(prefix) + strlen(postfix) + 1;
 	char * checklabelwithdelim = malloc(dataLen * sizeof(char));
-	//strcpy(checkJson, jsonPrefix);
-	//strcat(checkJson, checkLabel);
-	//strcat(checkJson, jsonPostfix);
+
 	strcpy(checklabelwithdelim, prefix);
 	strcat(checklabelwithdelim, checkLabel);
 	strcat(checklabelwithdelim, postfix);
