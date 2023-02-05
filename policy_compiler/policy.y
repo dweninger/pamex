@@ -16,6 +16,8 @@ extern int yylex();
 extern int yylineno();
 extern int yytext();
 int printFlag = 0;
+int levels = 0;
+
 %}
 
 %union {
@@ -94,17 +96,19 @@ int main(int ac, char ** av) {
 		extern FILE * yyin;
 		char current_file_name[64];
 		sprintf(current_file_name, "./test_files/test%d", i);
+		printf("current_file_name %s\n", current_file_name);
 		if((yyin = fopen(current_file_name, "r")) == NULL) {
 			perror(av[1]);
 			exit(1);
 		}
-	
+		printf("OPENED FILE\n");	
 		if(!yyparse()) {
 			printf("Test %d worked.\n", i);
 		} else {
 			printf("Test %d failed.\n", i);
 		}
-
+		levels = 0;
+		fclose(yyin);
 	}
 
 	#else
@@ -130,9 +134,9 @@ int main(int ac, char ** av) {
 	}
 	
 	if(!yyparse()) {
-		printf("Policy parse worked.\n");
+		printf("Policy parser worked.\n");
 	} else {
-		printf("Policy parse failed.\n");
+		printf("Policy parser failed.\n");
 	}
 	#endif
 

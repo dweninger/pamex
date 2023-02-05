@@ -900,19 +900,26 @@ YY_RULE_SETUP
 #line 46 "policy.l"
 { }; 
 	YY_BREAK
+case YY_STATE_EOF(INITIAL):
+#line 47 "policy.l"
+{ 
+			yypop_buffer_state();
+			if ( !YY_CURRENT_BUFFER ) {
+                		yyterminate();
+                	}
+            	}
+	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 47 "policy.l"
+#line 53 "policy.l"
 { yyerror("Error in Lex\n"); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 49 "policy.l"
+#line 55 "policy.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 913 "policy.c"
-case YY_STATE_EOF(INITIAL):
-	yyterminate();
+#line 922 "policy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1927,7 +1934,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 49 "policy.l"
+#line 55 "policy.l"
 
 
 

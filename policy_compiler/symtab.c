@@ -3,7 +3,7 @@
 #include <string.h>
 #include "symtab.h"
 
-int levels;
+//int levels;
 symbol * levelplacements[1024];
 symbol symtab[NHASH];
 
@@ -14,6 +14,7 @@ symbol symtab[NHASH];
  * 		 symbol is located in the symbol table)
  */
 static unsigned symhash(char * sym) {
+	printf("symhash\n");
 	unsigned int hash = 0;
 	unsigned c;
 
@@ -32,6 +33,7 @@ static unsigned symhash(char * sym) {
  * type  the type of the symbol being looked up (file, user, label, or level)
  */
 symbol * lookup(char * sym, enum type type) {
+	printf("lookup\n");
 	symbol * sp = &symtab[symhash(sym)%NHASH];
 	int scount = NHASH;
 	while(--scount >= 0) {
@@ -63,6 +65,7 @@ symbol * lookup(char * sym, enum type type) {
  * word  the name of the symbol being added
  */
 void addlevel(int lineno, int placement, char * word) {
+	printf("addlevel\n");
 	levelRef * lr;
 	symbol * sp = lookup(word, LEVEL);
 
@@ -89,6 +92,7 @@ void addlevel(int lineno, int placement, char * word) {
  * word  the name of the symbol being added
  */
 void addlabel(int lineno, char * word) {
+	printf("addlabel\n");
 	labelRef * lr;
 	symbol * sp = lookup(word, LABEL);
 	
@@ -114,6 +118,7 @@ void addlabel(int lineno, char * word) {
  * word  the name of the symbol being added
  */
 void adduser(int lineno, char * word) {
+	printf("adduser\n");
 	userRef * ur;
 	symbol * sp = lookup(word, USER_NAME);
 	
@@ -138,6 +143,7 @@ void adduser(int lineno, char * word) {
  * word  the name of the symbol being added
  */
 void addfile(int lineno, char * word) {
+	printf("addfile\n");
 	fileRef * fr;
 	symbol * sp = lookup(word, FILE_NAME);
 	
@@ -163,6 +169,7 @@ void addfile(int lineno, char * word) {
  * returns string representing data for the level symbol delimited by :
  */
 char * leveldataformat(symbol * sym) {
+	printf("leveldataformat\n");
 	if(sym->reflist[0].level == NULL) {
 		return "";
 	}
@@ -171,30 +178,3 @@ char * leveldataformat(symbol * sym) {
 	return levelData;
 }
 
-/**
- * leveltojson - return json data from the level symbol passed in
- * sym  the symbol of type level
- * returns string representing JSON data for the level symbol
- */
-char * leveltojson(symbol * sym) {
-	if(sym->reflist[0].level == NULL) {
-		return "";
-	}
-	char * jsondata = malloc(sizeof(100));
-	sprintf(jsondata, "{\"%s\":\"%s\",\"%s\":%d}", "name", strdup(sym->name), "placement", sym->reflist[0].level->placement);
-	return jsondata;
-}
-
-/**
- * labeltojson - return json data from the label symbol passed in
- * sym  the symbol of type label
- * returns string representing JSON data for the label symbol
- */
-char * labeltojson(symbol * sym) {
-	if(sym->reflist[0].label == NULL) {
-		return "";
-	}
-	char * jsondata = malloc(sizeof(100));
-	snprintf(jsondata, sizeof(jsondata), "{\"%s\":\"%s\"}", "name", strdup(sym->name));
-	return jsondata;
-}

@@ -4,9 +4,11 @@ YACC = bison
 
 all: parser
 
+test: semantics.c symtab.c policy.c policy.tab.c
+	${CC} -g -D TEST -o parser_test $^
+
 parser: semantics.c symtab.c policy.c policy.tab.c
 	${CC} -o $@ $^
-	#${CC} -D TEST -o $@ $^
 
 policy.tab.c policy.tab.h: policy.y
 	${YACC} -vd policy.y		
@@ -15,3 +17,6 @@ policy.c: policy.l
 	${LEX} -o $*.c $<
 
 policy.o: policy.c policy.tab.h
+
+clean:
+	rm *.o policy.output policy.tab.c policy-out.txt parser parser_test

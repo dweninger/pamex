@@ -44,6 +44,12 @@ digit 		[0-9]
 {comment}	{ yylval.strval = strdup(yytext); };
 {ws}		{ };
 {nl}		{ }; 
+<<EOF>> 	{ 
+			yypop_buffer_state();
+			if ( !YY_CURRENT_BUFFER ) {
+                		yyterminate();
+                	}
+            	}
 .		{ yyerror("Error in Lex\n"); }
 
 %%

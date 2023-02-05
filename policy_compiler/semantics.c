@@ -14,6 +14,19 @@ extern int printFlag; // Whether or not the program should print
 char * gLabelList; // 
 
 void shiftLevelPlacements(int pos);
+void printLevelPlacements();
+
+void Finish() {
+	printf("FINISH\n");
+	for(int i = 0; i < levels; i++) {
+		levelplacements[i] = NULL;
+		free(levelplacements[i]);
+	}
+
+	levels = 0;	
+	printFlag = -1;
+	free(gLabelList);
+}
 
 /**
  * doUserAssignLevel - write the level information for a particular user to the out file
@@ -21,6 +34,7 @@ void shiftLevelPlacements(int pos);
  * user  the name of the user that is being written
  */
 void doUserAssignLevel(char * levelName, char * user) {
+	printf("doUserAssignLevel");
 	symbol * sym = lookup(levelName, LEVEL);
 	char * leveldata = leveldataformat(sym);
 	
@@ -35,6 +49,7 @@ void doUserAssignLevel(char * levelName, char * user) {
  * user  the name of the user that is being written
  */
 void doUserAssignLabels(char ** labelList, char * user) {	
+	printf("doUserAssignLabels\n");
 	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
 	for(int i = 0; i < labelListSize; i++) {
 		FILE * outFile = fopen("policy-out.txt", "a");
@@ -51,6 +66,7 @@ void doUserAssignLabels(char ** labelList, char * user) {
  */
 
 void doFileAssignLevel(char * levelName, char * file) {
+	printf("doFileAssignLevel\n");
 	symbol * sym = lookup(levelName, LEVEL);
 	char * leveldata = leveldataformat(sym);
 	
@@ -66,6 +82,7 @@ void doFileAssignLevel(char * levelName, char * file) {
  * file  the path of the file that the labels will be assigned to
  */
 void doFileAssignLabels(char ** labelList, char * file) {
+	printf("doFileAssignLabels\n");
 	//char * labeljson = malloc(sizeof(1024));
 	// build label JSON
 	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
@@ -88,6 +105,7 @@ void doFileAssignLabels(char ** labelList, char * file) {
  * returns labelArr
  */
 char ** doLabelList(char * labelList) {
+	printf("doLabelList\n");
 	char ** labelArr;
 	labelArr = (char**)malloc(sizeof(char *));
 	int index = 0;
@@ -100,7 +118,7 @@ char ** doLabelList(char * labelList) {
 		index ++;
 	}
 	gLabelList = "";
-	//free(labelList);
+	free(gLabelList);
 	gLabelList = malloc(sizeof(char *));
 	return labelArr;
 }
@@ -112,6 +130,7 @@ char ** doLabelList(char * labelList) {
  * labelList  the existing string representing a list of labels
  */
 char * doConcatLabels(char * label) {
+	printf("doConcatLabels\n");
 	if(strlen(gLabelList) > 0) {
 		strcat(gLabelList, ", ");
 	}
@@ -129,20 +148,24 @@ char * doConcatLabels(char * label) {
  * placement  the hierarchy ranking of the level to be added
  */
 void doDefineLevel(char * levelName, int placement) {	
+	printf("doDefineLevel\n");
 	// Find if level in symtab already exists or create new symbol for level
 	symbol * sym = lookup(levelName, LEVEL);
 	
 	// check if levels need to shift placements
-	if(levelplacements[placement]) {
+	if(levelplacements[placement] && placement != 0) {
 		shiftLevelPlacements(placement);
-	}
+	} else if (levelplacements[placement] && placement == 0) {
+		sym->name = strdup(levelName);
+		return;
+	} 
 	
 	if(sym->newSym) {
 		// new level being added to symtab
 		addlevel(0, placement, levelName);
 		sym = lookup(levelName, LEVEL);
-
 	} else {
+		return;
 		// level is being re-defined. allow?
 	}
 	// add level to placements array
@@ -156,8 +179,11 @@ void doDefineLevel(char * levelName, int placement) {
  * pos  the position that the new level should be at
  */
 void shiftLevelPlacements(int pos) {
+	printf("shiftLevelPlacements\n");
 	int i;
+	printf("levels: %d\n", levels);
 	for(i = levels - 1; i > pos; i--) {
+		printf("print %d\n", i);
 		levelplacements[i]->reflist[0].level->placement = levelplacements[i]->reflist[0].level->placement - 1;
 		levelplacements[i] = levelplacements[i - 1];
 	}
@@ -168,10 +194,17 @@ void shiftLevelPlacements(int pos) {
  * printLevelPlacements - prints all of the level placements in the levelplacements array.
  * 	(used for debugging)
  */
-static void printLevelPlacements() {
-	for(int i = 0; i < sizeof(levelplacements) / sizeof(levelplacements[0]); i++) {
-		printf("LP: [%d, %s]", i, levelplacements[i]->name);
+void printLevelPlacements() {
+	printf("printLevelPlacements\n");
+	int i = 0;
+	while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
+		printf("LP: [%d, %s]\n", i, levelplacements[i]->name);
+		i++;
 	}
+	//for(int i = 0; i < sizeof(levelplacements) / sizeof(levelplacements[0]); i++) {
+	//	printf("%d\n", i);
+	//	printf("LP: [%d, %s]", i, levelplacements[i]->name);
+	//}
 }
 
 /**
@@ -179,6 +212,7 @@ static void printLevelPlacements() {
  * labelName  name of a new label 
  */
 void doDefineLabel(char * labelName) {
+	printf("doDefineLabel: %s\n", labelName);
 	symbol * sym = lookup(labelName, LABEL);
 	if(sym->newSym){
 		// add new label into symbol table
@@ -200,6 +234,9 @@ void doDefineLabel(char * labelName) {
  * returns  int containing the level placement
  */
 int doComp(int op, char * id) {
+	printf("doComp\n");
+	printf("levels: %d\n", levels);
+	printLevelPlacements();
 	int curPlacement = -1;
 	symbol * sym = lookup(id, LEVEL);
 	if(op == 1) {	
@@ -222,6 +259,14 @@ int doComp(int op, char * id) {
  * returns  int containing the level placement
  */
 int doSet(int res) {
+	printf("doset\n");
+	printf("levels: %d\n", levels);
+	printLevelPlacements();
+	if(levels == 0) {
+		if(res != 0) {
+			doDefineLevel("unrestricted", 0);
+		}
+	}	
 	// check if level is unrestricted or restricted
 	if(res != 0 && res != 1) {
 		perror("Error setting level\n");
