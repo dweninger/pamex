@@ -118,7 +118,7 @@ char ** doLabelList(char * labelList) {
 		index ++;
 	}
 	gLabelList = "";
-	free(gLabelList);
+	//free(gLabelList);
 	gLabelList = malloc(sizeof(char *));
 	return labelArr;
 }

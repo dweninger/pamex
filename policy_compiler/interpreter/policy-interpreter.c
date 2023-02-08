@@ -10,6 +10,7 @@
 
 int filePathsSize;
 char ** filePaths;
+int dbAccessed = 0;
 
 int main(int ac, char ** av) {
 	printf("Starting policy interpreter tool...\n");
@@ -63,10 +64,9 @@ int main(int ac, char ** av) {
 			assignLabelToFile(assignee, assignmentData, pathToFiles);
 		
 		} else if (strcmp(assignmentType, "USER_LEVEL") == 0) {
-			assignLevelToUser(assignee, assignmentData);
-		
+			writeUserLevelToDB(assignee, assignmentData);
 		} else if (strcmp(assignmentType, "USER_LABELS") == 0) {
-			collectLabelForUser(assignee, assignmentData);
+			writeUserLabelToDB(assignee, assignmentData);
 		
 		} else {
 			fprintf(stderr, "Error reading input file. Line prefix incorrect.\n");
@@ -150,7 +150,7 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 		}
 		free(data);
 	} else {
-		if(!labelExistsInFile(assignmentData, xattr)) {
+		if(!labelExistsInXAttrs(assignmentData, xattr)) {
 			char * delimiter = ":";
 			size_t dataLen = strlen(assignmentData) + strlen(xattr) + strlen(delimiter) + 1;
 			char * data = malloc(dataLen * sizeof(char));
@@ -170,7 +170,7 @@ void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFile
 	filePath = "";
 }
 
-int labelExistsInFile(char * checkLabel, char * fileJson) {
+int labelExistsInXAttrs(char * checkLabel, char * fileJson) {
 	regex_t reegex;
 	// Build JSON object to search for
 	char * prefix = "({|:)";
@@ -189,12 +189,65 @@ int labelExistsInFile(char * checkLabel, char * fileJson) {
 	return value == 0;
 }
 	
-void assignLevelToUser(char * assignee, char * assignmentData) {
+void writeUserLevelToDB(char * assignee, char * assignmentData) {
+        char * line = NULL;
+        size_t len = 0;
+        ssize_t read;
 	
+	if(!dbAccessed) {
+		fclose(fopen("targeted_users_db.txt", "w"));
+	}
+
+	FILE * outFile = fopen("targeted_users_db.txt", "a");
+ 	if(outFile == NULL) {
+                fprintf(stderr, "Error reading or creating output file.\n");
+                exit(EXIT_FAILURE);
+        }	
+
+	if(!dbAccessed)	{
+		dbAccessed = 1;
+	}
+
+	fprintf(outFile, "%s:%s\n", assignee, assignmentData);
+	fclose(outFile);
 }
 
-void collectLabelForUser(char * assignee, char * assignmentData) {
+void writeUserLabelToDB(char * assignee, char * assignmentData) {
+	FILE * outFile = fopen("targeted_users_db.txt", "r");
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	int foundUser = 0;
+	char * outString = malloc(1024);
 
+	if(outFile == NULL) {
+		fprintf(stderr, "Output file does not exist for writing label.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	while((read = getline(&line, &len, outFile)) != -1) {
+		char * token = strtok(strdup(line), ":");
+		if(strcmp(token, assignee) == 0) {
+			line[strcspn(line, "\n")] = 0;
+			strcat(outString, line);
+			strcat(outString, ":");
+			strcat(outString, assignmentData);
+			strcat(outString, "\n");
+			foundUser = 1;
+		} else {
+			strcat(outString, line);
+		}
+	}
+	fclose(outFile);
+
+	outFile = fopen("targeted_users_db.txt", "w");
+	fprintf(outFile, "%s", outString);
+
+	if(!foundUser){
+		fprintf(stderr, "Could not find user that label belongs to.\n");
+		exit(EXIT_FAILURE);
+	}
+	free(outString);
 }
 
 int fileAlreadyAccessed(char * file) {
