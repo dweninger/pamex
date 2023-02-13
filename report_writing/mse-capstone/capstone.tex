@@ -1,0 +1,113 @@
+\documentclass[letterpaper,12pt]{report}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage{fancyhdr,tocloft,natbib,url,graphicx,float,listings,sidecap,wrapfig}
+\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
+\usepackage{tabularx}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+\usepackage{qtree,algorithm,algorithmic}
+\pagestyle{plain}
+\fancyhf{}
+\lhead{}
+\chead{}
+\rhead{}
+\cfoot{\thepage}
+
+
+%\floatstyle{boxed}
+%\restylefloat{figure}
+
+\hypersetup {
+	colorlinks=false,
+	pdfborder={0 0 0},
+}
+
+\setcounter{secnumdepth}{3}
+\renewcommand*\thesection{\arabic{section}.}
+\renewcommand*\thesubsection{\thesection \arabic{subsection}.}
+\renewcommand*\thesubsubsection{\thesubsection \arabic{subsubsection}.}
+
+\setcounter{tocdepth}{3}
+\renewcommand\contentsname{}				% TOC title
+\renewcommand\listfigurename{}				% LOF title
+\renewcommand\listtablename{}				% LOT title
+\setlength\cftaftertoctitleskip{-0.5in}
+\setlength\cftafterloftitleskip{-0.5in}
+\setlength\cftafterlottitleskip{-0.5in}
+
+\renewcommand\bibsection{\section{References}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+%%  COVER PAGE
+\input{cover}	
+\clearpage
+
+%% SIGNATURE PAGE
+\input{signature}
+\clearpage
+
+\hypersetup{pageanchor=true}
+\setcounter{page}{1}
+\pagenumbering{roman}
+\renewcommand\arraystretch{1.5}
+
+%% ABSTRACT
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+Student, Johnny Q., ``\(P = NP\),'' Master of Software Engineering, May 2011, (Albert Einstein, Ph.D.). \\
+
+This manuscript describes \ldots
+\clearpage
+
+%%% ACKNOWLEDGEMENTS
+\section*{Acknowledgements}
+\addcontentsline{toc}{section}{Acknowledgments}
+\ldots
+\clearpage
+
+%% TABLE OF CONTENTS
+\section*{Table of Contents}
+\tableofcontents
+\clearpage
+
+
+%% LIST OF TABLES
+\section*{List of Tables}
+\addcontentsline{toc}{section}{List of Tables}
+\listoftables
+\clearpage
+
+%% LIST OF FIGURES
+\section*{List of Figures}
+\addcontentsline{toc}{section}{List of Figures}
+\listoffigures
+\clearpage
+
+%% GLOSSARY
+\section*{Glossary}
+\addcontentsline{toc}{section}{Glossary}
+\input{glossary}
+\clearpage
+
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\IfFileExists{section01/section}{\input{section01/section}}{}\clearpage
+\IfFileExists{section02/section}{\input{section02/section}}{}\clearpage
+\IfFileExists{section03/section}{\input{section03/section}}{}\clearpage
+\IfFileExists{section04/section}{\input{section04/section}}{}\clearpage
+
+%% BIBLIOGRAPHY
+\section{Bibliography}
+\label{sec:bibliougraphy}
+\clearpage
+
+%%% APPENDICES
+\section{Appendices}
+\label{sec:appendices}
+\clearpage
+
+\end{document}
