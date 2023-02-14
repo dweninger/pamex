@@ -4,9 +4,6 @@ YACC = bison
 
 all: parser
 
-test: semantics.c symtab.c policy.c policy.tab.c
-	${CC} -g -D TEST -o parser_test $^
-
 parser: semantics.c symtab.c policy.c policy.tab.c
 	${CC} -o $@ $^
 
