@@ -25,17 +25,17 @@ void shiftLevelPlacements(int pos);
 void printLevelPlacements();
 
 void Finish() {
-	FILE * levelsFP = fopen("../data/level_order.txt", "w");
+	printLevelPlacements();
 	
 	
-	levelsFP = fopen("../data/level_order.txt", "a");
-	int i = 0;
-	while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
-		fprintf(levelsFP, "LP: [%d, %s]\n", i, levelplacements[i]->name);
-		i++;
-	}
+	// levelsFP = fopen("../data/level_order.txt", "a");
+	// int i = 0;
+	// while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
+	// 	fprintf(levelsFP, "LP: [%d, %s]\n", i, levelplacements[i]->name);
+	// 	i++;
+	// }
 	
-	fclose(levelsFP);
+	// fclose(levelsFP);
 	levels = 0;	
 	printFlag = -1;
 	free(gLabelList);
@@ -177,6 +177,7 @@ void doDefineLevel(char * levelName, int placement) {
 	// add level to placements array
 	levelplacements[placement] = sym;
 	levels++;
+	printLevelPlacements();
 }
 
 /**
@@ -185,7 +186,6 @@ void doDefineLevel(char * levelName, int placement) {
  * pos  the position that the new level should be at
  */
 void shiftLevelPlacements(int pos) {
-	printf("shift %d\n", pos);
 	int i;
 	for(i = levels - 1; i > pos - 1; i--) {
 		levelplacements[i + 1] = levelplacements[i];
@@ -199,12 +199,14 @@ void shiftLevelPlacements(int pos) {
  * 	(used for debugging)
  */
 void printLevelPlacements() {
-	printf("printLevelPlacements\n");
+	// printf("printLevelPlacements\n");
+	FILE * levelsFP = fopen("../data/level_order.txt", "w");
 	int i = 0;
 	while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
-		printf("LP: [%d, %s]\n", i, levelplacements[i]->name);
+		fprintf(levelsFP, "%s:%d\n", levelplacements[i]->name, i);
 		i++;
 	}
+	fclose(levelsFP);
 }
 
 /**
