@@ -1,0 +1,6 @@
+FILE_LEVEL file1.txt secret:2
+FILE_LEVEL file2.txt confidential:1
+FILE_LABELS file2.txt extra-access
+FILE_LABELS file2.txt more-access
+USER_LEVEL adam top-secret:4
+USER_LABELS adam additional
