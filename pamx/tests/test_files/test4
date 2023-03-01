@@ -1,0 +1,9 @@
+level non-confidential (set unrestricted);
+level confidential (set restricted);
+level secret (> confidential);
+label additional;
+label more-access;
+label extra-access;
+level top-secret (> secret);
+level extra-secret (< top-secret);
+
