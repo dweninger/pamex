@@ -1,3 +1,0 @@
-level non-confidential (set unrestricted);
-level confidential (set restricted);
-label more-access;

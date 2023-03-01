@@ -1,3 +1,0 @@
-level confidential (set restricted);
-
-user-assign confidential -> user;

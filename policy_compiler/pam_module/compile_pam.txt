@@ -1,1 +1,0 @@
-gcc -o run_pam.o main.c -lpam -lpam_misc
