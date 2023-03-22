@@ -23,8 +23,8 @@ int main (int argc, char ** argv) {
     char userCommand[100];
 
     // Check args
-	if(argc > 1) {
-		fprintf(stderr, "usage: %s\n", argv[0]);
+	if(argc != 2) {
+		fprintf(stderr, "usage: %s <dir_containing_sudo_proc>\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -35,7 +35,7 @@ int main (int argc, char ** argv) {
 	
 	// Set proc path
 	char * procFilePath = malloc(200 * sizeof(char));
-    sprintf(procFilePath, "../sudo_proc/%s/attr/current", userCommand);
+    sprintf(procFilePath, "%s/sudo_proc/%s/attr/current", argv[1], userCommand);
 
     FILE * procFile = fopen(procFilePath, "r");
     while(!procFile) {
