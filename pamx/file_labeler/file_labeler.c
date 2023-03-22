@@ -55,7 +55,8 @@ int addlevel(char * level_db_path, char * file_path, char * level_name) {
         char * token = strtok(strdup(line), ":");
         if(strcmp(token, level_name) == 0) {
             found_level = 1;
-            db_line = strdup(line);
+            strcpy(db_line, line);
+            db_line[strcspn(db_line, "\n")] = '\0';
         }
     }
 
@@ -84,7 +85,7 @@ int removelevel(char * file_path) {
 
 int addlabel(char * file_path, char * label_name) {
     char ** file_labels = getfilelabels(file_path);
-    if(!containslabel(file_labels, label_name)) {
+    if(containslabel(file_labels, label_name)) {
         exit(EXIT_SUCCESS);
     }
     char * new_labels = malloc(500);
@@ -92,15 +93,15 @@ int addlabel(char * file_path, char * label_name) {
     int xattrSize = getxattr(file_path, "security.fsc.labels", xattr, 500);
 	if(xattrSize == -1) {
 		if(errno == ENODATA) {
-			return 0;
+			sprintf(new_labels, "%s", label_name);
 		} else {
 			getxattrErrorPrints();
 			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", file_path, errno);
 			exit(EXIT_FAILURE);
 		}
-	}
-
-    sprintf(new_labels, "%s:%s", xattr, label_name);
+	} else {
+        sprintf(new_labels, "%s:%s", xattr, label_name);
+    }
 
     if(setxattr(file_path, "security.fsc.label", new_labels, strlen(new_labels), 0) == -1) {    
 		setxattrErrorPrints();
