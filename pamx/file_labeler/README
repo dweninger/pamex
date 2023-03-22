@@ -1,0 +1,12 @@
+File Labeler Usage
+==================
+    ./file_labeler <path_to_level_db> <path_to_file> (-al | -cl | -rl | -ac | -rc) <level_or_label_name>
+
+  -al is the flag to add a level to the file
+    If the file already has a level, this will change it to the new level specified
+  -cl is the flag to change the file's level in its extended attributes. 
+    This only works if the new name specified is contianed in the level DB
+  -rl is the flag to remove the file's level in its extended attributes
+  -ac is the flag to add a label to the file's extended attributes
+  -rc is the flag to remove a label from the file's extended attributes
+    If the label does not exist, this does nothing
