@@ -28,45 +28,54 @@ int main (int argc, char ** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Welcome to the Pamx Oracle!\n");
-    printf("Enter PID\n");
-    printf(" > ");
-    scanf("%s", userCommand); 
-	
-	// Set proc path
-	char * procFilePath = malloc(200 * sizeof(char));
-    sprintf(procFilePath, "%s/sudo_proc/%s/attr/current", argv[1], userCommand);
-
-    FILE * procFile = fopen(procFilePath, "r");
-    if(!procFile) {
-        fprintf(stderr, "Could not find proc file\n");
-        exit(EXIT_FAILURE);
-    }
-
-    FILE * levelDB = fopen(argv[2], "r");
+    // Make sure level database exists based on user args
+    char * levelDBPath = strdup(argv[2]);
+    FILE * levelDB = fopen(levelDBPath, "r");
     if(!levelDB) {
         fprintf(stderr, "Could not find level DB\n");
         exit(EXIT_FAILURE);
     }
+    fclose(levelDB);
+
+    printf("Welcome to the Pamx Oracle!\n");
+
+    // Prompt user for PID
+    // This is the name of the dir that the attr/current file is in
+    printf("Enter PID\n");
+    printf(" > ");
+    scanf("%s", userCommand); 
+	
+	// Set proc path based on user input
+	char * procFilePath = malloc(200 * sizeof(char));
+    sprintf(procFilePath, "%s/sudo_proc/%s/attr/current", argv[1], userCommand);
+
+    // Make sure proc file exists
+    FILE * procFile = fopen(procFilePath, "r");
+    // If the proc file was not found, prompt for it again
     while(!procFile) {
-        printf("Proc file not found for pid %s\n", userCommand);
+        printf("Proc file not found for pid %s. Try again.\n", userCommand);
         printf(" > ");
         scanf("%s", userCommand);
+        sprintf(procFilePath, "%s/sudo_proc/%s/attr/current", argv[1], userCommand);
+        procFile = fopen(procFilePath, "r");
     }
-    
+    // Check that the proc file contains information
     if(read = getline(&line, &len, procFile) == -1) {
         fprintf(stderr, "The proc file is empty\n");
         exit(EXIT_FAILURE);
     }
+    fclose(procFile);
+    
     printf("Pid accepted.\n");
+
+    // Keep prompting user for commands until they quit
     printf("Type help for a list of commands.\n");
     printf(" > ");
     scanf("%s", userCommand); 
-    
-    while(strcasecmp(userCommand, "quit") != 0){
-        fseek(procFile, 0, SEEK_SET);
-        // help
+    while(strcasecmp(userCommand, "quit") != 0) {
+        
         if(strcasecmp(userCommand, "help") == 0) {
+            // help
             printf("Pamx Oracle Commands:\n"
             "help - print list of commands\n"
             "user - check the name of the signed in user\n"
@@ -75,15 +84,21 @@ int main (int argc, char ** argv) {
             "cfa - alias for the checkfileaccess command\n"
             "fileinfo - get the authentication information of a file\n"
             "quit - quit the Oracle\n");
-        // check username
+        
         } else if(strcasecmp(userCommand, "user") == 0) {
+            // check username
+            procFile = fopen(procFilePath, "r");
             read = getline(&line, &len, procFile);
             char * token = strtok(strdup(line), ":");
             printf("%s\n", token);
             free(token);
-        // check user info
+            fclose(procFile);
+        
         } else if (strcasecmp(userCommand, "userinfo") == 0) {
+            // check user info
+            procFile = fopen(procFilePath, "r");
             read = getline(&line, &len, procFile);
+
             char * token = strtok(strdup(line), ":");
             printf("{\"username\" : \"%s\", ", token);
             token = strtok(NULL, ":");
@@ -98,23 +113,26 @@ int main (int argc, char ** argv) {
                 token = strtok(NULL, ":");
             }
             printf("]}\n");
+
             free(token);
-        // check if a user can access a file
+            fclose(procFile);
+        
         } else if (strcasecmp(userCommand, "checkfileaccess") == 0 || strcasecmp(userCommand, "cfa") == 0) {
-            int userlevel = getUserLevel(procFile, levelDB);
-            fseek(procFile, 0, SEEK_SET);
-            fseek(levelDB, 0, SEEK_SET);
-            char ** userlabels = getUserLabels(procFile);
+            // check if a user can access a file
+            int userlevel = getUserLevel(procFilePath, levelDBPath);
+            char ** userlabels = getUserLabels(procFilePath);
             printf("File path: ");
             char targetedFilePath[100];
             scanf("%s", targetedFilePath);
+
             FILE * targetedFile = fopen(targetedFilePath, "r");
             if(!targetedFile) {
                 fprintf(stderr, "File not found at %s\n", targetedFilePath);
-                break;
+                goto LOOP;
             }
-            int filelevel = getFileLevel(targetedFilePath, levelDB);
-            fseek(levelDB, 0, SEEK_SET);
+            fclose(targetedFile);
+
+            int filelevel = getFileLevel(targetedFilePath, levelDBPath);
 	        char ** filelabels = getFileLabels(targetedFilePath);
 
             if(userlevel >= filelevel) {
@@ -126,8 +144,9 @@ int main (int argc, char ** argv) {
             } else {
                 printf("\nAccess denied. User level too low.\n");
             }
-        // check file info
+        
         } else if (strcasecmp(userCommand, "fileinfo") == 0) {
+            // check file info
             printf("File path: ");
             char targetedFilePath[100];
             scanf("%s", targetedFilePath);
@@ -135,20 +154,22 @@ int main (int argc, char ** argv) {
             FILE * targetedFile = fopen(targetedFilePath, "r");
             if(!targetedFile) {
                 fprintf(stderr, "File not found at %s\n", targetedFilePath);
-                break;
+                goto LOOP;
             }
+            fclose(targetedFile);
+
             char * levelname = "unclassified";
-            char * levelplacement = "0";
+            int levelplacement = 0;
             char * levelxattr = malloc(500);
             int xattrSize = getxattr(targetedFilePath, "security.fsc.level", levelxattr, 500);
             if(xattrSize != -1) {
                 char * token = strtok(levelxattr, ":");
                 levelname = strdup(token);
 	            token = strtok(NULL, ":");
-                levelplacement = strdup(token);
+                levelplacement = getFileLevel(targetedFilePath, levelDBPath);
             }
 
-            printf("{\"file\" : \"%s\", \"level\" : \"%s\", \"placement\" : \"%s\", \"labels\" : [", targetedFilePath, levelname, levelplacement);
+            printf("{\"file\" : \"%s\", \"level\" : \"%s\", \"placement\" : \"%d\", \"labels\" : [", targetedFilePath, levelname, levelplacement);
             char * labelxattr = malloc(500);
             xattrSize = getxattr(targetedFilePath, "security.fsc.labels", labelxattr, 500);
             if(xattrSize != -1) {
@@ -162,28 +183,32 @@ int main (int argc, char ** argv) {
         } else {
             printf("Not a valid command. Type help for a list of commands.\n");
         }
+
+    LOOP:
         printf(" > ");
         scanf("%s", userCommand); 
     }
 
-	fclose(procFile);
 }
 
 /**
  * getUserLevel - get the hierarchical level of the user from the sudo proc file
  * targetedUsersDBFile - the filepointer of the targeted users DB 
  */
-int getUserLevel(FILE * procFile, FILE * levelDBFile) {
+int getUserLevel(char * procFilePath, char * levelDBPath) {
 	char * line = NULL;
     size_t len = 0;
     ssize_t read;
     char * levelName = malloc(200);
     int placement = -1;
+    FILE * procFile = fopen(procFilePath, "r");
+    FILE * levelDBFile = fopen(levelDBPath, "r");
 
 	read = getline(&line, &len, procFile);
     char * token = strtok(strdup(line), ":");
     token = strtok(NULL, ":");
     strcpy(levelName, token);
+
     while ((read = getline(&line, &len, levelDBFile)) != -1) {
         char * levelToken = strtok(strdup(line), ":");
         if(strcmp(levelName, levelToken) == 0) {
@@ -191,19 +216,25 @@ int getUserLevel(FILE * procFile, FILE * levelDBFile) {
             placement = atoi(levelToken);
         }
     }
+
     if(placement == -1) {
         fprintf(stderr, "Could not find user's level %s in the level DB\n", levelName);
         exit(EXIT_FAILURE);
     }
+
+    fclose(procFile);
+    fclose(levelDBFile);
 	return placement;
 }
 
-char ** getUserLabels(FILE * procFile) {
+char ** getUserLabels(char * procFilePath) {
 	char * line = NULL;
     size_t len = 0;
     ssize_t read;
 	char ** labelList = (char**)malloc(sizeof(char*));
 	int index = 0;
+    FILE * procFile = fopen(procFilePath, "r");
+
     read = getline(&line, &len, procFile);
     char * token = strtok(strdup(line), ":");
     token = strtok(NULL, ":");
@@ -217,10 +248,11 @@ char ** getUserLabels(FILE * procFile) {
         token = strtok(NULL, ":");
     }
 
+    fclose(procFile);
     return labelList;
 }
 
-int getFileLevel(char * targetedFilePath, FILE * levelDBFile) {
+int getFileLevel(char * targetedFilePath, char * levelDBPath) {
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
@@ -235,6 +267,7 @@ int getFileLevel(char * targetedFilePath, FILE * levelDBFile) {
 
 	char * token = strtok(xattr, ":");
     strcpy(levelName, token);
+    FILE * levelDBFile = fopen(levelDBPath, "r");
     while ((read = getline(&line, &len, levelDBFile)) != -1) {
         char * levelToken = strtok(strdup(line), ":");
         if(strcmp(levelName, levelToken) == 0) {
@@ -247,6 +280,8 @@ int getFileLevel(char * targetedFilePath, FILE * levelDBFile) {
         fprintf(stderr, "Could not find user's level %s in the level DB\n", levelName);
         exit(EXIT_FAILURE);
     }
+
+    fclose(levelDBFile);
 	return placement;
 }
 
