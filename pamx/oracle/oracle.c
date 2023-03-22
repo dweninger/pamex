@@ -23,8 +23,8 @@ int main (int argc, char ** argv) {
     char userCommand[100];
 
     // Check args
-	if(argc != 2) {
-		fprintf(stderr, "usage: %s <dir_containing_sudo_proc>\n", argv[0]);
+	if(argc != 3) {
+		fprintf(stderr, "usage: %s <dir_containing_sudo_proc> <path_to_level_db>\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,6 +38,16 @@ int main (int argc, char ** argv) {
     sprintf(procFilePath, "%s/sudo_proc/%s/attr/current", argv[1], userCommand);
 
     FILE * procFile = fopen(procFilePath, "r");
+    if(!procFile) {
+        fprintf(stderr, "Could not find proc file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    FILE * levelDB = fopen(argv[2], "r");
+    if(!levelDB) {
+        fprintf(stderr, "Could not find level DB\n");
+        exit(EXIT_FAILURE);
+    }
     while(!procFile) {
         printf("Proc file not found for pid %s\n", userCommand);
         printf(" > ");
@@ -91,8 +101,9 @@ int main (int argc, char ** argv) {
             free(token);
         // check if a user can access a file
         } else if (strcasecmp(userCommand, "checkfileaccess") == 0 || strcasecmp(userCommand, "cfa") == 0) {
-            int userlevel = getUserLevel(procFile);
+            int userlevel = getUserLevel(procFile, levelDB);
             fseek(procFile, 0, SEEK_SET);
+            fseek(levelDB, 0, SEEK_SET);
             char ** userlabels = getUserLabels(procFile);
             printf("File path: ");
             char targetedFilePath[100];
@@ -102,7 +113,8 @@ int main (int argc, char ** argv) {
                 fprintf(stderr, "File not found at %s\n", targetedFilePath);
                 break;
             }
-            int filelevel = getFileLevel(targetedFilePath);
+            int filelevel = getFileLevel(targetedFilePath, levelDB);
+            fseek(levelDB, 0, SEEK_SET);
 	        char ** filelabels = getFileLabels(targetedFilePath);
 
             if(userlevel >= filelevel) {
@@ -161,15 +173,29 @@ int main (int argc, char ** argv) {
  * getUserLevel - get the hierarchical level of the user from the sudo proc file
  * targetedUsersDBFile - the filepointer of the targeted users DB 
  */
-int getUserLevel(FILE * procFile) {
+int getUserLevel(FILE * procFile, FILE * levelDBFile) {
 	char * line = NULL;
     size_t len = 0;
     ssize_t read;
+    char * levelName = malloc(200);
+    int placement = -1;
+
 	read = getline(&line, &len, procFile);
     char * token = strtok(strdup(line), ":");
     token = strtok(NULL, ":");
-    token = strtok(NULL, ":");
-	return atoi(token);
+    strcpy(levelName, token);
+    while ((read = getline(&line, &len, levelDBFile)) != -1) {
+        char * levelToken = strtok(strdup(line), ":");
+        if(strcmp(levelName, levelToken) == 0) {
+            levelToken = strtok(NULL, ":");
+            placement = atoi(levelToken);
+        }
+    }
+    if(placement == -1) {
+        fprintf(stderr, "Could not find user's level %s in the level DB\n", levelName);
+        exit(EXIT_FAILURE);
+    }
+	return placement;
 }
 
 char ** getUserLabels(FILE * procFile) {
@@ -194,16 +220,34 @@ char ** getUserLabels(FILE * procFile) {
     return labelList;
 }
 
-int getFileLevel(char * targetedFilePath) {
+int getFileLevel(char * targetedFilePath, FILE * levelDBFile) {
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char * levelName = malloc(200);
+    int placement = -1;
 	char * xattr = malloc(500);
+
     int xattrSize = getxattr(targetedFilePath, "security.fsc.level", xattr, 500);
     if(xattrSize == -1) {
         return 0;
     }
 
 	char * token = strtok(xattr, ":");
-	token = strtok(NULL, ":");
-	return atoi(token);
+    strcpy(levelName, token);
+    while ((read = getline(&line, &len, levelDBFile)) != -1) {
+        char * levelToken = strtok(strdup(line), ":");
+        if(strcmp(levelName, levelToken) == 0) {
+            levelToken = strtok(NULL, ":");
+            placement = atoi(levelToken);
+        }
+    }
+    
+    if(placement == -1) {
+        fprintf(stderr, "Could not find user's level %s in the level DB\n", levelName);
+        exit(EXIT_FAILURE);
+    }
+	return placement;
 }
 
 char ** getFileLabels(char * targetedFilePath) {
