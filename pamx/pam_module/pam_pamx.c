@@ -11,8 +11,6 @@
 #include <ftw.h>
 #include <unistd.h>
 
-#define LOGFILE "/var/log/login.log"
-
 void createprocfile(int cpid, char * filepath, char * userInfo);
 void makedir(char * path);
 char * getUserFromDB(char * username, FILE * targetedUsersDBFile);
@@ -78,13 +76,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 		return PAM_AUTH_ERR;
 	}
 
-	// Log the username to the log file
-	FILE *log = fopen(LOGFILE, "a");
-	if (log != NULL) {
-		fprintf(log, "User %s logged in\n", username);
-		fclose(log);
-	}
-
 	if(argc != 2) {
 		printf("usage: <path_to_users_db> <dest_dir>");
 		return PAM_IGNORE;
@@ -99,21 +90,17 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 
 	char * userInfo = strdup(getUserFromDB(username, targetedUsersDBFile));
 	fclose(targetedUsersDBFile);
-
 	if(userInfo == NULL){
 		// If the user is not found in the user DB
 		// give them level unrestricted
-		fprintf(stderr, "User not found in user DB\n");
 		char * userInfoTemp = malloc(500);
 		sprintf(userInfoTemp, "%s:unrestricted:0", username);
 		userInfo = strdup(userInfoTemp);
 	}
 	
 	filepath = strdup(argv[1]);
-
+	
 	createprocfile(cpid, filepath, userInfo);
-
-	free(filepath);
 	return PAM_SUCCESS;
 }
 
@@ -136,4 +123,3 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 PAM_EXTERN int pam_sm_chauthtok(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	return PAM_SUCCESS;
 }
-

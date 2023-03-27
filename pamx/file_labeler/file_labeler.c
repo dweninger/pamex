@@ -1,9 +1,11 @@
-#include <sys/xattr.h>
-#include <errno.h>
-#include <string.h>
-#include <strings.h>
-#include <stdlib.h>
-#include <stdio.h>
+/**
+ * This is the file labeler tool for Pamx
+ * The job of this tool is to allow a privileged user to change a file's
+ *  Pamx levels and labels via their extended attributes easily
+ * 
+ * Author: Daniel Weninger
+ * Last Modified: 3/22/2023
+*/
 
 #include "file_labeler.h"
 
@@ -13,32 +15,33 @@ int main (int argc, char ** argv) {
         fprintf(stderr, "usage: %s <path_to_level_db> <path_to_file> (-al | -cl | -rl | -ac | -rc) <level_or_label_name>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-     char * PATH_TO_LEVEL_DB = argv[1];
-     char * PATH_TO_FILE = argv[2];
-     char * FLAG = argv[3];
-     char * NAME = argv[4];
+     char * path_to_level_db = argv[1];
+     char * path_to_file = argv[2];
+     char * flag = argv[3];
+     char * name = argv[4];
 
-    if(strcmp(FLAG, "-al") == 0) {
+    if(strcmp(flag, "-al") == 0) {
         // add level
-        addlevel(PATH_TO_LEVEL_DB, PATH_TO_FILE, NAME);
-    } else if(strcmp(FLAG, "-cl") == 0) {
+        add_level(path_to_level_db, path_to_file, name);
+    } else if(strcmp(flag, "-cl") == 0) {
         // change level
-        addlevel(PATH_TO_LEVEL_DB, PATH_TO_FILE, NAME);
-    } else if(strcmp(FLAG, "-rl") == 0) {
+        add_level(path_to_level_db, path_to_file, name);
+    } else if(strcmp(flag, "-rl") == 0) {
         // remove level
-        removelevel(PATH_TO_FILE);
-    } else if(strcmp(FLAG, "-ac") == 0) {
+        remove_level(path_to_file);
+    } else if(strcmp(flag, "-ac") == 0) {
         // add label
-        addlabel(PATH_TO_FILE, NAME);
-    } else if(strcmp(FLAG, "-rc") == 0) {
+        add_label(path_to_file, name);
+    } else if(strcmp(flag, "-rc") == 0) {
         // remove label
-        removelabel(PATH_TO_FILE, NAME);
+        remove_label(path_to_file, name);
     } else {
         fprintf(stderr, "Unable to interpret flag.\n");
+        exit(EXIT_FAILURE);
     }
 }
 
-int addlevel(char * level_db_path, char * file_path, char * level_name) {
+int add_level(char * level_db_path, char * file_path, char * level_name) {
     FILE * level_db_fp = fopen(level_db_path, "r");
     char * line = NULL;
     size_t len = 0;
@@ -68,14 +71,14 @@ int addlevel(char * level_db_path, char * file_path, char * level_name) {
     fclose(level_db_fp);
     
     if(setxattr(file_path, "security.fsc.level", db_line, strlen(db_line), 0) == -1) {    
-		setxattrErrorPrints();
+		setxattr_error_prints();
 		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", db_line, file_path, errno);
 		exit(EXIT_FAILURE);
     }
     return 1;
 }
 
-int removelevel(char * file_path) {
+int remove_level(char * file_path) {
     if(removexattr(file_path, "security.fsc.level") == -1) {  
 		fprintf(stderr, "Error removing level attribute for file %s - Errno: %d\n", file_path, errno);
 		exit(EXIT_FAILURE);
@@ -83,19 +86,19 @@ int removelevel(char * file_path) {
     return 1;
 }
 
-int addlabel(char * file_path, char * label_name) {
-    char ** file_labels = getfilelabels(file_path);
-    if(containslabel(file_labels, label_name)) {
+int add_label(char * file_path, char * label_name) {
+    char ** file_labels = get_file_labels(file_path);
+    if(contains_label(file_labels, label_name)) {
         exit(EXIT_SUCCESS);
     }
     char * new_labels = malloc(500);
     char * xattr = malloc(500);
-    int xattrSize = getxattr(file_path, "security.fsc.labels", xattr, 500);
-	if(xattrSize == -1) {
+    int xattr_size = getxattr(file_path, "security.fsc.labels", xattr, 500);
+	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			sprintf(new_labels, "%s", label_name);
 		} else {
-			getxattrErrorPrints();
+			getxattr_error_prints();
 			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", file_path, errno);
 			exit(EXIT_FAILURE);
 		}
@@ -104,15 +107,15 @@ int addlabel(char * file_path, char * label_name) {
     }
 
     if(setxattr(file_path, "security.fsc.label", new_labels, strlen(new_labels), 0) == -1) {    
-		setxattrErrorPrints();
+		setxattr_error_prints();
 		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", new_labels, file_path, errno);
 		exit(EXIT_FAILURE);
     }
     return 1;
 }
 
-int removelabel(char * file_path, char * label_name) {
-    char ** file_labels = getfilelabelsexcept(file_path, label_name);
+int remove_label(char * file_path, char * label_name) {
+    char ** file_labels = get_file_labels_except(file_path, label_name);
     char * new_labels = malloc(500);
     int i = 0;
 
@@ -128,68 +131,68 @@ int removelabel(char * file_path, char * label_name) {
         i++;
 	}
      if(setxattr(file_path, "security.fsc.label", new_labels, strlen(new_labels), 0) == -1) {    
-		setxattrErrorPrints();
+		setxattr_error_prints();
 		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", new_labels, file_path, errno);
 		exit(EXIT_FAILURE);
     }
     return 1;
 }
 
-char ** getfilelabels(char * targetedFilePath) {
+char ** get_file_labels(char * targeted_file_path) {
 	char * xattr = malloc(500);
-	char ** labelList = (char**)malloc(sizeof(char*));
+	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
 
-	int xattrSize = getxattr(targetedFilePath, "security.fsc.labels", xattr, 500);
+	int xattrSize = getxattr(targeted_file_path, "security.fsc.labels", xattr, 500);
 	if(xattrSize == -1) {
 		if(errno == ENODATA) {
 			return NULL;
 		} else {
-			getxattrErrorPrints();
-			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", targetedFilePath, errno);
+			getxattr_error_prints();
+			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", targeted_file_path, errno);
 			exit(EXIT_FAILURE);
 		}
 	}
 	
 	char * token = strtok(xattr, ":");
 	while(token) {
-		labelList = (char **)realloc(labelList, (index +1) * sizeof(char*));
-		labelList[index] = strdup(token);
+		label_list = (char **)realloc(label_list, (index +1) * sizeof(char*));
+		label_list[index] = strdup(token);
 		token = strtok(NULL, ":");
 		index++;
 	}
 	return labelList;
 }
 
-char ** getfilelabelsexcept(char * targetedFilePath, char * labelName) {
+char ** get_file_labels_except(char * targeted_file_path, char * label_name) {
 	char * xattr = malloc(500);
-	char ** labelList = (char**)malloc(sizeof(char*));
+	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
 
-	int xattrSize = getxattr(targetedFilePath, "security.fsc.labels", xattr, 500);
-	if(xattrSize == -1) {
+	int xattr_size = getxattr(targeted_file_path, "security.fsc.labels", xattr, 500);
+	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			return NULL;
 		} else {
-			getxattrErrorPrints();
-			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", targetedFilePath, errno);
+			getxattr_error_prints();
+			fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", targeted_file_path, errno);
 			exit(EXIT_FAILURE);
 		}
 	}
 	
 	char * token = strtok(xattr, ":");
 	while(token) {
-        if(strcmp(token, labelName) != 0) {
-            labelList = (char **)realloc(labelList, (index +1) * sizeof(char*));
-            labelList[index] = strdup(token);
+        if(strcmp(token, label_name) != 0) {
+            label_list = (char **)realloc(label_list, (index +1) * sizeof(char*));
+            label_list[index] = strdup(token);
             token = strtok(NULL, ":");
             index++;
         }
 	}
-	return labelList;
+	return label_list;
 }
 
-int containslabel(char ** label_list, char * ref_label) {
+int contains_label(char ** label_list, char * ref_label) {
 	int i = 0;
     
 	while(label_list && label_list[i] && strcmp(label_list[i], "") != 0) {
@@ -202,10 +205,10 @@ int containslabel(char ** label_list, char * ref_label) {
 	return 0;
 }
 
-void setxattrErrorPrints() {
+void setxattr_error_prints() {
 	printf("EDQUOT: %d\nEExist XATTR_CREATE: %d\nENODATA XATTR_REPLACE: %d\nENOSPC:%d\nENOTSUP: %d\nEPERM: %d\nERANGE: %d\n", EDQUOT, EEXIST, ENODATA, ENOSPC, ENOTSUP, EPERM, ERANGE);
 }
 	
-void getxattrErrorPrints() {
+void getxattr_error_prints() {
 	printf("E2BIG: %d\nENODATA: %d\nENOTSUP: %d\nERANGE:%d\n", E2BIG, ENODATA, ENOTSUP, ERANGE);
 }
