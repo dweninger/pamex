@@ -16,250 +16,231 @@
 #include "symtab.h"
 
 extern int levels; // Amount of levels that have been defined
-extern symbol * levelplacements[1024]; // An ordered list of level symbols by placement
+extern symbol * level_placements[1024]; // An ordered list of level symbols by placement
 extern symbol symtab[NHASH]; // The symbol table holding all of the variable info
-extern int printFlag; // Whether or not the program should print
-char * gLabelList; // 
-
-void shiftLevelPlacements(int pos);
-void printLevelPlacements();
+extern int print_flag; // Whether or not the program should print
+char * g_label_list; // 
 
 void Finish() {
-	printLevelPlacements();
-	
-	
-	// levelsFP = fopen("../data/level_order.txt", "a");
-	// int i = 0;
-	// while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
-	// 	fprintf(levelsFP, "LP: [%d, %s]\n", i, levelplacements[i]->name);
-	// 	i++;
-	// }
-	
-	// fclose(levelsFP);
 	levels = 0;	
-	printFlag = -1;
-	free(gLabelList);
+	print_flag = -1;
+	free(g_label_list);
 }
 
 /**
- * doUserAssignLevel - write the level information for a particular user to the out file
- * levelName  the name of the level that is being written
+ * do_user_assign_level - write the level information for a particular user to the out file
+ * level_name  the name of the level that is being written
  * user  the name of the user that is being written
  */
-void doUserAssignLevel(char * levelName, char * user) {
+void do_user_assign_level(char * level_name, char * user) {
+	symbol * sym = lookup(level_name, LEVEL);
+	char * level_data = format_level_data(sym);
 	
-	symbol * sym = lookup(levelName, LEVEL);
-	char * leveldata = leveldataformat(sym);
-	
-	FILE * outFile = fopen("../data/policy-out.txt", "a");
-	fprintf(outFile, "USER_LEVEL %s %s\n", user, leveldata);
-	fclose(outFile);
+	FILE * out_file = fopen("../data/policy-out.txt", "a");
+	fprintf(out_file, "USER_LEVEL %s %s\n", user, level_data);
+	fclose(out_file);
 }
 
 /**
- * doUserAssignLabels - write the label information for a particular user to the out file 
- * labelList  a string list of labels that are being written
+ * do_user_assign_labels - write the label information for a particular user to the out file 
+ * label_list  a string list of labels that are being written
  * user  the name of the user that is being written
  */
-void doUserAssignLabels(char ** labelList, char * user) {	
-	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
-	for(int i = 0; i < labelListSize; i++) {
-		FILE * outFile = fopen("../data/policy-out.txt", "a");
-		fprintf(outFile, "USER_LABELS %s %s\n", user, labelList[i]);
-		fclose(outFile);
+void do_user_assign_labels(char ** label_list, char * user) {	
+	int label_list_size = sizeof(label_list) / sizeof(label_list[0]);
+	for(int i = 0; i < label_list_size; i++) {
+		FILE * out_file = fopen("../data/policy-out.txt", "a");
+		fprintf(out_file, "USER_LABELS %s %s\n", user, label_list[i]);
+		fclose(out_file);
 	}
 }
 
 /**
- * doFileAssignLevel - Add the level JSON to the extended attributes of the specified
+ * do_file_assign_level - Add the level JSON to the extended attributes of the specified
  * 	file
- * levelName  the name of the level that will be added to the extended attributes
+ * level_name  the name of the level that will be added to the extended attributes
  * file  the path of the file that the level will be assigned to
  */
 
-void doFileAssignLevel(char * levelName, char * file) {
-	symbol * sym = lookup(levelName, LEVEL);
-	char * leveldata = leveldataformat(sym);
+void do_file_assign_level(char * level_name, char * file) {
+	symbol * sym = lookup(level_name, LEVEL);
+	char * level_data = format_level_data(sym);
 	
-	FILE * outFile = fopen("../data/policy-out.txt", "a");
-	fprintf(outFile, "FILE_LEVEL %s %s\n", file, leveldata);
-	fclose(outFile);
+	FILE * out_file = fopen("../data/policy-out.txt", "a");
+	fprintf(out_file, "FILE_LEVEL %s %s\n", file, level_data);
+	fclose(out_file);
 }
 
 /**
- * doFileAssignLabels - Add the label JSON to the extended attributes of the specified
+ * do_file_assign_labels - Add the label JSON to the extended attributes of the specified
  * 	file
- * labelList  a list of strings that contain the names of labels
+ * label_list  a list of strings that contain the names of labels
  * file  the path of the file that the labels will be assigned to
  */
-void doFileAssignLabels(char ** labelList, char * file) {
-	int labelListSize = sizeof(labelList) / sizeof(labelList[0]);
+void do_file_assign_labels(char ** label_list, char * file) {
+	int label_list_size = sizeof(label_list) / sizeof(label_list[0]);
 	int index = 0;
-	char * cur = labelList[index];
+	char * cur = label_list[index];
 	while(cur != NULL) {
-		FILE * outFile = fopen("../data/policy-out.txt", "a");
-		fprintf(outFile, "FILE_LABELS %s %s\n", file, labelList[index]);
-		fclose(outFile);
+		FILE * out_file = fopen("../data/policy-out.txt", "a");
+		fprintf(out_file, "FILE_LABELS %s %s\n", file, label_list[index]);
+		fclose(out_file);
 
 		index++;
-		cur = labelList[index];
+		cur = label_list[index];
 	}
 }
 
 /**
- * doLabelList - Create a char** struct that contains a list of the names of labels
+ * do_label_list - Create a char** struct that contains a list of the names of labels
  * label 
- * labelList
- * returns labelArr
+ * label_list
+ * returns label_arr
  */
-char ** doLabelList(char * labelList) {
-	char ** labelArr;
-	labelArr = (char**)malloc(sizeof(char *));
+char ** do_label_list(char * label_list) {
+	char ** label_arr;
+	label_arr = (char**)malloc(sizeof(char *));
 	int index = 0;
-	char * token = strtok(labelList, ", ");
-	labelArr[0] = strdup(token);
+	char * token = strtok(label_list, ", ");
+	label_arr[0] = strdup(token);
 	while(token != NULL) {
-		labelArr = (char **)realloc(labelArr, (index + 1) * sizeof(char *));
-		labelArr[index] = strdup(token);
+		label_arr = (char **)realloc(label_arr, (index + 1) * sizeof(char *));
+		label_arr[index] = strdup(token);
 		token = strtok(NULL, ", ");
 		index ++;
 	}
-	gLabelList = "";
-	//free(gLabelList);
-	gLabelList = malloc(sizeof(char *));
-	return labelArr;
+	g_label_list = "";
+	g_label_list = malloc(sizeof(char *));
+	return label_arr;
 }
 
 /**
- * doConcatLabels - concatenate a label to the beginning of a string of labels that
+ * do_concat_labels - concatenate a label to the beginning of a string of labels that
  * 	represent a label list
  * label  the new label to be added
- * labelList  the existing string representing a list of labels
+ * label_list  the existing string representing a list of labels
  */
-char * doConcatLabels(char * label) {
-	if(strlen(gLabelList) > 0) {
-		strcat(gLabelList, ", ");
+char * do_concat_labels(char * label) {
+	if(strlen(g_label_list) > 0) {
+		strcat(g_label_list, ", ");
 	}
-	strcat(gLabelList, label);
+	strcat(g_label_list, label);
 
 	char * labels = malloc(sizeof(char *));
-	labels = strdup(gLabelList);
+	labels = strdup(g_label_list);
 	return labels;
 }
 
 /**
- * doDefineLevel - Define either a pre-existing or a new level and add it to the
- * 	symbol table and the levelplacements array
- * levelName  the name of the level to be added
+ * do_define_level - Define either a pre-existing or a new level and add it to the
+ * 	symbol table and the level_placements array
+ * level_name  the name of the level to be added
  * placement  the hierarchy ranking of the level to be added
  */
-void doDefineLevel(char * levelName, int placement) {	
+void do_define_level(char * level_name, int placement) {	
 	// Find if level in symtab already exists or create new symbol for level
-	symbol * sym = lookup(levelName, LEVEL);
+	symbol * sym = lookup(level_name, LEVEL);
 	
 	// check if levels need to shift placements
-	if(levelplacements[placement] && placement != 0) {
-		shiftLevelPlacements(placement);
-	} else if (levelplacements[placement] && placement == 0) {
-		sym->name = strdup(levelName);
+	if(level_placements[placement] && placement != 0) {
+		shift_level_placements(placement);
+	} else if (level_placements[placement] && placement == 0) {
+		sym->name = strdup(level_name);
 		levels++;
 		return;
 	} 
 	
-	if(sym->newSym) {
+	if(sym->new_sym) {
 		// new level being added to symtab
-		addlevel(0, placement, levelName);
-		sym = lookup(levelName, LEVEL);
+		add_level(0, placement, level_name);
+		sym = lookup(level_name, LEVEL);
 	} else {
 		return;
 		// level is being re-defined. allow?
 	}
 	// add level to placements array
-	levelplacements[placement] = sym;
+	level_placements[placement] = sym;
 	levels++;
-	printLevelPlacements();
 }
 
 /**
- * shiftLevelPlacements - In the list of level placements, shift all of the levels
+ * shift_level_placements - In the list of level placements, shift all of the levels
  * 	at the param's level and above up 1 to make room for new level placement
  * pos  the position that the new level should be at
  */
-void shiftLevelPlacements(int pos) {
+void shift_level_placements(int pos) {
 	int i;
 	for(i = levels - 1; i > pos - 1; i--) {
-		levelplacements[i + 1] = levelplacements[i];
-		levelplacements[i + 1]->reflist[0].level->placement++;
-
+		level_placements[i + 1] = level_placements[i];
+		level_placements[i + 1]->ref_list[0].level->placement++;
 	}
 }
 
 /**
- * printLevelPlacements - prints all of the level placements in the levelplacements array.
+ * print_level_placements - prints all of the level placements in the level_placements array.
  * 	(used for debugging)
  */
-void printLevelPlacements() {
-	// printf("printLevelPlacements\n");
-	FILE * levelsFP = fopen("../data/level_order.txt", "w");
+void print_level_placements() {
+	FILE * levels_fp = fopen("../data/level_order.txt", "w");
 	int i = 0;
-	while(levelplacements[i] && strcmp(levelplacements[i]->name, "") != 0){
-		fprintf(levelsFP, "%s:%d\n", levelplacements[i]->name, i);
+	while(level_placements[i] && strcmp(level_placements[i]->name, "") != 0){
+		fprintf(levels_fp, "%s:%d\n", level_placements[i]->name, i);
 		i++;
 	}
-	fclose(levelsFP);
+	fclose(levels_fp);
 }
 
 /**
- * doDefineLabel - add a label name to the symbol table
- * labelName  name of a new label 
+ * do_define_label - add a label name to the symbol table
+ * label_name  name of a new label 
  */
-void doDefineLabel(char * labelName) {
-	symbol * sym = lookup(labelName, LABEL);
-	if(sym->newSym){
+void do_define_label(char * label_name) {
+	symbol * sym = lookup(label_name, LABEL);
+	if(sym->new_sym){
 		// add new label into symbol table
-		addlabel(0, labelName);
+		add_label(0, label_name);
 	} else {
 		// label is being re-defined. Don't allow
 		perror("Error: cannot redefine label");
 		exit(EXIT_FAILURE);
 	}
-	gLabelList = malloc(sizeof(char *));
+	g_label_list = malloc(sizeof(char *));
 }
 
 /**
- * doComp - return the placement number of either 1 less or 1 more than
+ * do_comp - return the placement number of either 1 less or 1 more than
  * 	the level param
  * op  the operation, either > or <, 
  *     indicating whether the level should be 1 placement higher or lower
  * id  the id of the level that the operator is refering to
  * returns  int containing the level placement
  */
-int doComp(int op, char * id) {
-	int curPlacement = -1;
+int do_comp(int op, char * id) {
+	int cur_placement = -1;
 	symbol * sym = lookup(id, LEVEL);
 	if(op == 1) {	
 		// <
-		curPlacement = sym->reflist[0].level->placement;
+		cur_placement = sym->ref_list[0].level->placement;
 	} else if(op == 2) {
 		// >
-		curPlacement = sym->reflist[0].level->placement + 1;
+		cur_placement = sym->ref_list[0].level->placement + 1;
 	} else {
 		perror("Comparison operator error\n");
 		exit(EXIT_FAILURE);
 	}
-	return curPlacement;
+	return cur_placement;
 }
 
 /**
- * doSet - return the placement of either 0 or 1 depending on if the
+ * do_set - return the placement of either 0 or 1 depending on if the
  * 	param is unrestricted or restricted
  * res  checks if the level is restricted or unrestricted
  * returns  int containing the level placement
  */
-int doSet(int res) {
+int do_set(int res) {
 	if(levels == 0) {
 		if(res != 0) {
-			doDefineLevel("unrestricted", 0);
+			do_define_level("unrestricted", 0);
 		}
 	}	
 	// check if level is unrestricted or restricted

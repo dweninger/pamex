@@ -34,17 +34,15 @@ typedef union utype {
 } utype;
 
 typedef struct symbol {
-	int newSym;
+	int new_sym;
 	char * name;
-	utype * reflist;
+	utype * ref_list;
 	enum type type;
 } symbol;
 
 symbol * lookup(char *, enum type);
-void addlevel(int, int, char *);
-void addlabel(int, char *);
-void adduser(int, char *);
-void addfile(int, char *);
-char * leveltojson(symbol * sym);
-char * labeltojson(symbol * sym);
-char * leveldataformat(symbol * sym);
+void add_level(int, int, char *);
+void add_label(int, char *);
+void add_user(int, char *);
+void add_file(int, char *);
+char * format_level_data(symbol * sym);

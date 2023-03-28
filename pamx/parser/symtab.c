@@ -12,7 +12,7 @@
 #include "symtab.h"
 
 //int levels;
-symbol * levelplacements[1024];
+symbol * level_placements[1024];
 symbol symtab[NHASH];
 
 /**
@@ -45,14 +45,14 @@ symbol * lookup(char * sym, enum type type) {
 	while(--scount >= 0) {
 		// Found symbol in table
 		if(sp->name && !strcasecmp(sp->name, sym)) {
-			sp->newSym = 0;
+			sp->new_sym = 0;
 			return sp;
 		}
 		// New symbol
 		if(!sp->name) {
-			sp->newSym = 1;
+			sp->new_sym = 1;
 			sp->name = strdup(sym);
-			sp->reflist = malloc(sizeof(utype *));
+			sp->ref_list = malloc(sizeof(utype *));
 			sp->type = type;
 			return sp;
 		}
@@ -66,17 +66,17 @@ symbol * lookup(char * sym, enum type type) {
 
 
 /**
- * addlevel - add symbol of the type level to the symbol table
+ * add_level - add symbol of the type level to the symbol table
  * lineno  the line number that the level symbol is on in the input file
  * word  the name of the symbol being added
  */
-void addlevel(int lineno, int placement, char * word) {
+void add_level(int lineno, int placement, char * word) {
 	levelRef * lr;
 	symbol * sp = lookup(word, LEVEL);
 
 	// reference found on same line. do not add to symtab
-	if(sp->reflist[0].level &&
-	   sp->reflist[0].level->lineno == lineno) return; 
+	if(sp->ref_list[0].level &&
+	   sp->ref_list[0].level->lineno == lineno) return; 
 
 	lr = malloc(sizeof(levelRef *));
 	
@@ -85,24 +85,24 @@ void addlevel(int lineno, int placement, char * word) {
 		abort(); 
 	}
 	
-	lr->next = sp->reflist;
+	lr->next = sp->ref_list;
 	lr->lineno = lineno;
 	lr->placement = placement;
-	sp->reflist->level = lr;
+	sp->ref_list->level = lr;
 }
 
 /**
- * addlabel - add symbol of the type label to the symbol table
+ * add_label - add symbol of the type label to the symbol table
  * lineno  the line number that the label symbol is on in the input file
  * word  the name of the symbol being added
  */
-void addlabel(int lineno, char * word) {
+void add_label(int lineno, char * word) {
 	labelRef * lr;
 	symbol * sp = lookup(word, LABEL);
 	
 	// reference found on same line
-	if(sp->reflist[0].label &&
-	   sp->reflist[0].label->lineno == lineno) return; 
+	if(sp->ref_list[0].label &&
+	   sp->ref_list[0].label->lineno == lineno) return; 
 	
 	lr = malloc(sizeof(labelRef *));
 	
@@ -111,23 +111,23 @@ void addlabel(int lineno, char * word) {
 		abort(); 
 	}
 	
-	lr->next = sp->reflist;
+	lr->next = sp->ref_list;
 	lr->lineno = lineno;
-	sp->reflist->label = lr;
+	sp->ref_list->label = lr;
 }
 
 /**
- * adduser - add symbol of type user to the symbol table
+ * add_user - add symbol of type user to the symbol table
  * lineno  the line number that the user symbol is on in the input file
  * word  the name of the symbol being added
  */
-void adduser(int lineno, char * word) {
+void add_user(int lineno, char * word) {
 	userRef * ur;
 	symbol * sp = lookup(word, USER_NAME);
 	
 	// reference found on same line
-	if(sp->reflist &&
-	   sp->reflist->user->lineno == lineno) return; 
+	if(sp->ref_list &&
+	   sp->ref_list->user->lineno == lineno) return; 
 	ur = malloc(sizeof(struct userRef *));
 	
 	if(!ur) { 
@@ -135,23 +135,23 @@ void adduser(int lineno, char * word) {
 		abort(); 
 	}
 	
-	ur->next = sp->reflist;
+	ur->next = sp->ref_list;
 	ur->lineno = lineno;
-	sp->reflist->user = ur;
+	sp->ref_list->user = ur;
 }
 
 /**
- * addfile - add symbol of type file to the symbol table
+ * add_file - add symbol of type file to the symbol table
  * lineno  the line number that the file symbol is on in the input file
  * word  the name of the symbol being added
  */
-void addfile(int lineno, char * word) {
+void add_file(int lineno, char * word) {
 	fileRef * fr;
 	symbol * sp = lookup(word, FILE_NAME);
 	
 	// reference found on same line
-	if(sp->reflist &&
-	   sp->reflist->file->lineno == lineno) return; 
+	if(sp->ref_list &&
+	   sp->ref_list->file->lineno == lineno) return; 
 	
 	fr = malloc(sizeof(fileRef *));
 	
@@ -160,22 +160,22 @@ void addfile(int lineno, char * word) {
 		abort(); 
 	}
 	
-	fr->next = sp->reflist;
+	fr->next = sp->ref_list;
 	fr->lineno = lineno;
-	sp->reflist->file = fr;
+	sp->ref_list->file = fr;
 }
 
 /**
- * leveldataformat - return level data similar to selinux. <level_name>:<level_placement>
+ * format_level_data - return level data similar to selinux. <level_name>:<level_placement>
  * sym  the symbol of type level
  * returns string representing data for the level symbol delimited by :
  */
-char * leveldataformat(symbol * sym) {
-	if(sym->reflist[0].level == NULL) {
+char * format_level_data(symbol * sym) {
+	if(sym->ref_list[0].level == NULL) {
 		return "";
 	}
 	char * levelData = malloc(200);
-	sprintf(levelData, "%s:%d", strdup(sym->name), sym->reflist[0].level->placement);
+	sprintf(levelData, "%s:%d", strdup(sym->name), sym->ref_list[0].level->placement);
 	return levelData;
 }
 

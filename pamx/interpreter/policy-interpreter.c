@@ -16,9 +16,9 @@
 
 #include "policy-interpreter.h"
 
-int filePathsSize;
-char ** filePaths;
-int dbAccessed = 0;
+int file_paths_size;
+char ** file_paths;
+int db_accessed = 0;
 
 int main(int ac, char ** av) {
 	printf("Starting policy interpreter tool...\n");
@@ -30,258 +30,258 @@ int main(int ac, char ** av) {
 	}
 
 	// Initiate global variables
-	filePathsSize = 0;
-	filePaths = (char **)malloc(sizeof(char*));
+	file_paths_size = 0;
+	file_paths = (char **)malloc(sizeof(char*));
 
 	// Initiate local variables
-	char * pathToFiles = strdup(av[2]);
-	FILE * filein = fopen(av[1], "r");
+	char * path_to_files = strdup(av[2]);
+	FILE * file_in = fopen(av[1], "r");
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
 
-	// Check if filein exists
-	if(filein == NULL) {
+	// Check if file_in exists
+	if(file_in == NULL) {
 		fprintf(stderr, "Input file does not exist\n");
 		exit(EXIT_FAILURE);
 	}
 
-	// Read filein line by line	
-	while((read = getline(&line, &len, filein)) != -1) {
+	// Read file_in line by line	
+	while((read = getline(&line, &len, file_in)) != -1) {
 		// read line data and separate into vars based on space delimiter
-		char * assignmentType;
+		char * assignment_type;
 		char * assignee;
-		char * assignmentData;
+		char * assignment_data;
         char * token = strtok(line, " ");
 
-        assignmentType = strdup(token);
+        assignment_type = strdup(token);
 		token = strtok(NULL, " ");
 		
 		assignee = strdup(token);
 		token = strtok(NULL, " ");
 		
-		assignmentData = strdup(token);
+		assignment_data = strdup(token);
 		// Remove trailing newline
-		assignmentData[strcspn(assignmentData, "\r\n")] = 0;	
+		assignment_data[strcspn(assignment_data, "\r\n")] = 0;	
 		
 		// Check which operation to do based on line prefix	
-		if (strcmp(assignmentType, "FILE_LEVEL") == 0) {
-			assignLevelToFile(assignee, assignmentData, pathToFiles);			
+		if (strcmp(assignment_type, "FILE_LEVEL") == 0) {
+			assign_level_to_file(assignee, assignment_data, path_to_files);			
 
-		} else if (strcmp(assignmentType, "FILE_LABELS") == 0) {
-			assignLabelToFile(assignee, assignmentData, pathToFiles);
+		} else if (strcmp(assignment_type, "FILE_LABELS") == 0) {
+			assign_label_to_file(assignee, assignment_data, path_to_files);
 		
-		} else if (strcmp(assignmentType, "USER_LEVEL") == 0) {
-			writeUserLevelToDB(assignee, assignmentData);
-		} else if (strcmp(assignmentType, "USER_LABELS") == 0) {
-			writeUserLabelToDB(assignee, assignmentData);
+		} else if (strcmp(assignment_type, "USER_LEVEL") == 0) {
+			write_user_level_to_db(assignee, assignment_data);
+		} else if (strcmp(assignment_type, "USER_LABELS") == 0) {
+			write_user_label_to_db(assignee, assignment_data);
 		
 		} else {
 			fprintf(stderr, "Error reading input file. Line prefix incorrect.\n");
 			exit(EXIT_FAILURE);
 		}
 	}
-	fclose(filein);	
+	fclose(file_in);	
 	printf("Policy interpreter tool done!\n");
 }
 
-void assignLevelToFile(char * assignee, char * assignmentData, char * pathToFiles) {
+void assign_level_to_file(char * assignee, char * assignment_data, char * path_to_files) {
 	errno = 0;
-	size_t filePathLen = strlen(assignee) + strlen(pathToFiles) + 1;
+	size_t file_path_len = strlen(assignee) + strlen(path_to_files) + 1;
 	// Create file path from path to dir and file name
-	char * filePath = malloc(filePathLen * sizeof(char));
-	strcpy(filePath, pathToFiles);
-	strcat(filePath, assignee);
+	char * file_path = malloc(file_path_len * sizeof(char));
+	strcpy(file_path, path_to_files);
+	strcat(file_path, assignee);
 	// Check if file exists
 	FILE * file; 
-	if(file = fopen(filePath, "r")) {
+	if(file = fopen(file_path, "r")) {
 		fclose(file);
 	} else {
-		fprintf(stderr, "File %s does not exist\n", filePath);
+		fprintf(stderr, "File %s does not exist\n", file_path);
 		exit(EXIT_FAILURE);
 	}
 
 	// Assign level to file
-	if(setxattr(filePath, "security.fsc.level", assignmentData, strlen(assignmentData), 0) == -1) {    
-		setxattrErrorPrints();
-		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", assignmentData, filePath, errno);
+	if(setxattr(file_path, "security.fsc.level", assignment_data, strlen(assignment_data), 0) == -1) {    
+		setxattr_error_prints();
+		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", assignment_data, file_path, errno);
 		exit(EXIT_FAILURE);
         }
-	filePath = "";
+	file_path = "";
 }
 
-void assignLabelToFile(char * assignee, char * assignmentData, char * pathToFiles) {
+void assign_label_to_file(char * assignee, char * assignment_data, char * path_to_files) {
 	errno = 0;
-	size_t filePathLen = strlen(assignee) + strlen(pathToFiles) + 1;
+	size_t file_path_len = strlen(assignee) + strlen(path_to_files) + 1;
 
 	// Create file path from path to dir and file name
-	char * filePath = malloc(filePathLen * sizeof(char));
-	strcpy(filePath, pathToFiles);
-	strcat(filePath, assignee);
+	char * file_path = malloc(file_path_len * sizeof(char));
+	strcpy(file_path, path_to_files);
+	strcat(file_path, assignee);
 
 	// Reset label extended attributes
-	if(!fileAlreadyAccessed(filePath)) {
-		if(setxattr(filePath, "security.fsc.labels", "", 0, 0) == -1) {
-			fprintf(stderr, "Error reseting labels for file %s - Errno: %d\n", filePath, errno);
+	if(!file_already_accessed(file_path)) {
+		if(setxattr(file_path, "security.fsc.labels", "", 0, 0) == -1) {
+			fprintf(stderr, "Error reseting labels for file %s - Errno: %d\n", file_path, errno);
 			exit(EXIT_FAILURE);
 		}
 	}
 
 	// Check if file exists
 	FILE * file; 
-	if(file = fopen(filePath, "r")) {
+	if(file = fopen(file_path, "r")) {
 		fclose(file);
 	} else {
-		fprintf(stderr, "File %s does not exist.\n", filePath);
+		fprintf(stderr, "File %s does not exist.\n", file_path);
 		exit(EXIT_FAILURE);
 	}
 
 	char * xattr = malloc(500);
-	int xattrSize = getxattr(filePath, "security.fsc.labels", xattr, 500);
-	if(xattrSize == -1) {
-		getxattrErrorPrints();
-		fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", filePath, errno);
+	int xattr_size = getxattr(file_path, "security.fsc.labels", xattr, 500);
+	if(xattr_size == -1) {
+		getxattr_error_prints();
+		fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", file_path, errno);
                 exit(EXIT_FAILURE);
 	}
 	// If the file does not already have a label attribute, create it
 	// else, add to existing file label attribute
-	if(!xattrSize) {
-		size_t dataLen = strlen(assignmentData) + 1;
-		char * data = malloc(dataLen * sizeof(char));
+	if(!xattr_size) {
+		size_t data_len = strlen(assignment_data) + 1;
+		char * data = malloc(data_len * sizeof(char));
 
 		// Build JSON
-		strcpy(data, assignmentData);
+		strcpy(data, assignment_data);
 
-		if(setxattr(filePath, "security.fsc.labels", data, strlen(data), 0) == -1) {
-			fprintf(stderr, "Error setting label attribute %s for file %s - Errno: %d\n", data, filePath, errno);
+		if(setxattr(file_path, "security.fsc.labels", data, strlen(data), 0) == -1) {
+			fprintf(stderr, "Error setting label attribute %s for file %s - Errno: %d\n", data, file_path, errno);
 			exit(EXIT_FAILURE);
 		}
 		free(data);
 	} else {
-		if(!labelExistsInXAttrs(assignmentData, xattr)) {
+		if(!label_exists_in_xattrs(assignment_data, xattr)) {
 			char * delimiter = ":";
-			size_t dataLen = strlen(assignmentData) + strlen(xattr) + strlen(delimiter) + 1;
-			char * data = malloc(dataLen * sizeof(char));
+			size_t data_len = strlen(assignment_data) + strlen(xattr) + strlen(delimiter) + 1;
+			char * data = malloc(data_len * sizeof(char));
 
 			// Build JSON
 			strcpy(data, xattr);
 			strcat(data, delimiter);
-			strcat(data, assignmentData);
-			if(setxattr(filePath, "security.fsc.labels", data, strlen(data), 0) == -1) {
-				setxattrErrorPrints();
-				fprintf(stderr, "Error adding label attribute %s for file %s.\n", data, filePath);
+			strcat(data, assignment_data);
+			if(setxattr(file_path, "security.fsc.labels", data, strlen(data), 0) == -1) {
+				setxattr_error_prints();
+				fprintf(stderr, "Error adding label attribute %s for file %s.\n", data, file_path);
 				exit(EXIT_FAILURE);
 			}
 			free(data);
 		}
 	}
-	filePath = "";
+	file_path = "";
 }
 
-int labelExistsInXAttrs(char * checkLabel, char * fileJson) {
+int label_exists_in_xattrs(char * check_label, char * file_json) {
 	regex_t reegex;
 	// Build JSON object to search for
 	char * prefix = "({|:)";
 	char * postfix = "(:|})";
-	size_t dataLen = strlen(checkLabel) + strlen(prefix) + strlen(postfix) + 1;
-	char * checklabelwithdelim = malloc(dataLen * sizeof(char));
+	size_t data_len = strlen(check_label) + strlen(prefix) + strlen(postfix) + 1;
+	char * check_label_with_delim = malloc(data_len * sizeof(char));
 
-	strcpy(checklabelwithdelim, prefix);
-	strcat(checklabelwithdelim, checkLabel);
-	strcat(checklabelwithdelim, postfix);
+	strcpy(check_label_with_delim, prefix);
+	strcat(check_label_with_delim, check_label);
+	strcat(check_label_with_delim, postfix);
 	int value;
 
-	value = regcomp(&reegex, checklabelwithdelim, 0);
-	value = regexec(&reegex, fileJson, 0, NULL, 0);
+	value = regcomp(&reegex, check_label_with_delim, 0);
+	value = regexec(&reegex, file_json, 0, NULL, 0);
 
 	return value == 0;
 }
 	
-void writeUserLevelToDB(char * assignee, char * assignmentData) {
+void write_user_level_to_db(char * assignee, char * assignment_data) {
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
 	
-	if(!dbAccessed) {
+	if(!db_accessed) {
 		fclose(fopen("targeted_users_db.txt", "w"));
 	}
 
-	FILE * outFile = fopen("targeted_users_db.txt", "a");
- 	if(outFile == NULL) {
+	FILE * out_file = fopen("targeted_users_db.txt", "a");
+ 	if(out_file == NULL) {
                 fprintf(stderr, "Error reading or creating output file.\n");
                 exit(EXIT_FAILURE);
         }	
 
-	if(!dbAccessed)	{
-		dbAccessed = 1;
+	if(!db_accessed)	{
+		db_accessed = 1;
 	}
 
-	fprintf(outFile, "%s:%s\n", assignee, assignmentData);
-	fclose(outFile);
+	fprintf(out_file, "%s:%s\n", assignee, assignment_data);
+	fclose(out_file);
 }
 
-void writeUserLabelToDB(char * assignee, char * assignmentData) {
-	FILE * outFile = fopen("targeted_users_db.txt", "r");
+void write_user_label_to_db(char * assignee, char * assignment_data) {
+	FILE * out_file = fopen("targeted_users_db.txt", "r");
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	int foundUser = 0;
-	char * outString = malloc(1024);
+	int found_user = 0;
+	char * out_string = malloc(1024);
 
-	if(outFile == NULL) {
+	if(out_file == NULL) {
 		fprintf(stderr, "Output file does not exist for writing label.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	while((read = getline(&line, &len, outFile)) != -1) {
+	while((read = getline(&line, &len, out_file)) != -1) {
 		char * token = strtok(strdup(line), ":");
 		if(strcmp(token, assignee) == 0) {
 			line[strcspn(line, "\n")] = 0;
-			strcat(outString, line);
-			strcat(outString, ":");
-			strcat(outString, assignmentData);
-			strcat(outString, "\n");
-			foundUser = 1;
+			strcat(out_string, line);
+			strcat(out_string, ":");
+			strcat(out_string, assignment_data);
+			strcat(out_string, "\n");
+			found_user = 1;
 		} else {
-			strcat(outString, line);
+			strcat(out_string, line);
 		}
 	}
-	fclose(outFile);
+	fclose(out_file);
 
-	outFile = fopen("targeted_users_db.txt", "w");
-	fprintf(outFile, "%s", outString);
+	out_file = fopen("targeted_users_db.txt", "w");
+	fprintf(out_file, "%s", out_string);
 
-	if(!foundUser){
+	if(!found_user){
 		fprintf(stderr, "Could not find user that label belongs to.\n");
 		exit(EXIT_FAILURE);
 	}
-	free(outString);
+	free(out_string);
 }
 
-int fileAlreadyAccessed(char * file) {
+int file_already_accessed(char * file) {
 	int index = 0;
-	char * curFile = NULL;
-	if(filePaths[0]) {
-		curFile = strdup(filePaths[0]);
+	char * cur_file = NULL;
+	if(file_paths[0]) {
+		cur_file = strdup(file_paths[0]);
 	}
-	while(curFile) {
-		if(strcmp(curFile, file) == 0) {
+	while(cur_file) {
+		if(strcmp(cur_file, file) == 0) {
 			// File found
 			return 1;
 		}
 		index++;
-		curFile = filePaths[index];
+		cur_file = file_paths[index];
 	}
 
-	filePaths = (char **)realloc(filePaths, (index + 1) * sizeof(char *));
-	filePaths[index] = strdup(file);
+	file_paths = (char **)realloc(file_paths, (index + 1) * sizeof(char *));
+	file_paths[index] = strdup(file);
 	return 0;
 }
 
-void setxattrErrorPrints() {
+void setxattr_error_prints() {
 	printf("EDQUOT: %d\nEExist XATTR_CREATE: %d\nENODATA XATTR_REPLACE: %d\nENOSPC:%d\nENOTSUP: %d\nEPERM: %d\nERANGE: %d\n", EDQUOT, EEXIST, ENODATA, ENOSPC, ENOTSUP, EPERM, ERANGE);
 }
 	
-void getxattrErrorPrints() {
+void getxattr_error_prints() {
 	printf("E2BIG: %d\nENODATA: %d\nENOTSUP: %d\nERANGE:%d\n", E2BIG, ENODATA, ENOTSUP, ERANGE);
 }
