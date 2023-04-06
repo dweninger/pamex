@@ -21,13 +21,14 @@ char ** file_paths;
 int db_accessed = 0;
 
 int main(int ac, char ** av) {
-	printf("Starting policy interpreter tool...\n");
 
 	// Check if there are correct amount of params
-	if(ac != 3) {
-		fprintf(stderr, "usage: %s <policy_filepath> <dir_of_files>\n", av[0]);
+	if(ac != 4) {
+		fprintf(stderr, "usage: %s <policy_filepath> <dir_of_files> <user_db_out_path>\n", av[0]);
 		exit(EXIT_FAILURE);
 	}
+
+	printf("Starting policy interpreter tool...\n");
 
 	// Initiate global variables
 	file_paths_size = 0;
@@ -35,6 +36,7 @@ int main(int ac, char ** av) {
 
 	// Initiate local variables
 	char * path_to_files = strdup(av[2]);
+	char * user_db_path = strdup(av[3]);
 	FILE * file_in = fopen(av[1], "r");
 	char * line = NULL;
 	size_t len = 0;
@@ -48,6 +50,7 @@ int main(int ac, char ** av) {
 
 	// Read file_in line by line	
 	while((read = getline(&line, &len, file_in)) != -1) {
+		printf("readline %s\n", line);
 		// read line data and separate into vars based on space delimiter
 		char * assignment_type;
 		char * assignee;
@@ -67,14 +70,12 @@ int main(int ac, char ** av) {
 		// Check which operation to do based on line prefix	
 		if (strcmp(assignment_type, "FILE_LEVEL") == 0) {
 			assign_level_to_file(assignee, assignment_data, path_to_files);			
-
 		} else if (strcmp(assignment_type, "FILE_LABELS") == 0) {
 			assign_label_to_file(assignee, assignment_data, path_to_files);
-		
 		} else if (strcmp(assignment_type, "USER_LEVEL") == 0) {
-			write_user_level_to_db(assignee, assignment_data);
+			write_user_level_to_db(assignee, assignment_data, user_db_path);
 		} else if (strcmp(assignment_type, "USER_LABELS") == 0) {
-			write_user_label_to_db(assignee, assignment_data);
+			write_user_label_to_db(assignee, assignment_data, user_db_path);
 		
 		} else {
 			fprintf(stderr, "Error reading input file. Line prefix incorrect.\n");
@@ -111,6 +112,7 @@ void assign_level_to_file(char * assignee, char * assignment_data, char * path_t
 }
 
 void assign_label_to_file(char * assignee, char * assignment_data, char * path_to_files) {
+	printf("assign label to file\n");	
 	errno = 0;
 	size_t file_path_len = strlen(assignee) + strlen(path_to_files) + 1;
 
@@ -179,6 +181,7 @@ void assign_label_to_file(char * assignee, char * assignment_data, char * path_t
 }
 
 int label_exists_in_xattrs(char * check_label, char * file_json) {
+	printf("label exists in xattrs\n");	
 	regex_t reegex;
 	// Build JSON object to search for
 	char * prefix = "({|:)";
@@ -197,22 +200,24 @@ int label_exists_in_xattrs(char * check_label, char * file_json) {
 	return value == 0;
 }
 	
-void write_user_level_to_db(char * assignee, char * assignment_data) {
-        char * line = NULL;
-        size_t len = 0;
-        ssize_t read;
+void write_user_level_to_db(char * assignee, char * assignment_data, char * user_db_out_path) {
+	printf("write user level to db %s | %s | %s\n", assignee, assignment_data, user_db_out_path);
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
 	
+	// clear the db if this is the first time accessing it
 	if(!db_accessed) {
-		fclose(fopen("targeted_users_db.txt", "w"));
+		fclose(fopen(user_db_out_path, "w"));
 	}
 
-	FILE * out_file = fopen("targeted_users_db.txt", "a");
+	FILE * out_file = fopen(user_db_out_path, "a");
  	if(out_file == NULL) {
-                fprintf(stderr, "Error reading or creating output file.\n");
-                exit(EXIT_FAILURE);
-        }	
+		fprintf(stderr, "Error reading or creating output file.\n");
+		exit(EXIT_FAILURE);
+	}	
 
-	if(!db_accessed)	{
+	if(!db_accessed) {
 		db_accessed = 1;
 	}
 
@@ -220,8 +225,9 @@ void write_user_level_to_db(char * assignee, char * assignment_data) {
 	fclose(out_file);
 }
 
-void write_user_label_to_db(char * assignee, char * assignment_data) {
-	FILE * out_file = fopen("targeted_users_db.txt", "r");
+void write_user_label_to_db(char * assignee, char * assignment_data, char * user_db_out_path) {
+	printf("write user label to db\n");
+	FILE * out_file = fopen(user_db_out_path, "r");
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
@@ -248,7 +254,7 @@ void write_user_label_to_db(char * assignee, char * assignment_data) {
 	}
 	fclose(out_file);
 
-	out_file = fopen("targeted_users_db.txt", "w");
+	out_file = fopen(user_db_out_path, "w");
 	fprintf(out_file, "%s", out_string);
 
 	if(!found_user){
@@ -259,6 +265,7 @@ void write_user_label_to_db(char * assignee, char * assignment_data) {
 }
 
 int file_already_accessed(char * file) {
+	printf("file already accessed\n");
 	int index = 0;
 	char * cur_file = NULL;
 	if(file_paths[0]) {

@@ -22,9 +22,9 @@ extern int print_flag; // Whether or not the program should print
 char * g_label_list; // 
 
 void Finish() {
-	levels = 0;	
-	print_flag = -1;
-	free(g_label_list);
+	//levels = 0;	
+	//print_flag = -1;
+	//free(g_label_list);
 }
 
 /**
