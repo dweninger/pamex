@@ -48,10 +48,15 @@ void do_user_assign_level(char * level_name, char * user) {
  */
 void do_user_assign_labels(char ** label_list, char * user) {	
 	int label_list_size = sizeof(label_list) / sizeof(label_list[0]);
-	for(int i = 0; i < label_list_size; i++) {
+	int index = 0;
+	char * cur = label_list[index];
+	while(cur != NULL) {
 		FILE * out_file = fopen("../data/policy-out.txt", "a");
-		fprintf(out_file, "USER_LABELS %s %s\n", user, label_list[i]);
+		fprintf(out_file, "USER_LABELS %s %s\n", user, label_list[index]);
 		fclose(out_file);
+
+		index++;
+		cur = label_list[index];
 	}
 }
 
