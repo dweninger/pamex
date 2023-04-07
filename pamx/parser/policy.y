@@ -17,6 +17,7 @@ extern int yylineno();
 extern int yytext();
 int printFlag = 0;
 int levels = 0;
+char * out_path;
 
 %}
 
@@ -61,12 +62,12 @@ int levels = 0;
 
 stmt_list	: 	stmt_list stmt
  			|	stmt							{};
-stmt		:	USERASSIGN level_name ASSIGN user';'				{ do_user_assign_level($2, $4); free($2); free($4);}
-			|	USERASSIGN level_name label_list ASSIGN user';'		{ do_user_assign_level($2, $5); do_user_assign_labels($3, $5); free($2); free($3); free($5); }
-			|	USERASSIGN label_list ASSIGN user';'				{ do_user_assign_labels($2, $4); free($2); free($4); }
-			|	FILEASSIGN level_name ASSIGN file';'				{ do_file_assign_level($2, $4); free($2); free($4); }
-			|   FILEASSIGN level_name label_list ASSIGN file';'		{ do_file_assign_level($2, $5); do_file_assign_labels($3, $5); free($2); free($3); free($5); }
-			|	FILEASSIGN label_list ASSIGN file';'				{ do_file_assign_labels($2, $4); free($2); free($4); }
+stmt		:	USERASSIGN level_name ASSIGN user';'				{ do_user_assign_level(out_path, $2, $4); free($2); free($4);}
+			|	USERASSIGN level_name label_list ASSIGN user';'		{ do_user_assign_level(out_path, $2, $5); do_user_assign_labels(out_path, $3, $5); free($2); free($3); free($5); }
+			|	USERASSIGN label_list ASSIGN user';'				{ do_user_assign_labels(out_path, $2, $4); free($2); free($4); }
+			|	FILEASSIGN level_name ASSIGN file';'				{ do_file_assign_level(out_path, $2, $4); free($2); free($4); }
+			|   FILEASSIGN level_name label_list ASSIGN file';'		{ do_file_assign_level(out_path, $2, $5); do_file_assign_labels(out_path, $3, $5); free($2); free($3); free($5); }
+			|	FILEASSIGN label_list ASSIGN file';'				{ do_file_assign_labels(out_path, $2, $4); free($2); free($4); }
 			|	LABEL label_name';' 								{ do_define_label($2); }
 			|	LEVEL level_name op';'								{ do_define_level($2, $3); };
 label_list	:	'['labels']'										{ $$ = do_label_list($2); };
@@ -128,7 +129,7 @@ int main(int ac, char ** av) {
 
 	if(strcmp(av[3], "-p") == 0) {
 		printFlag = 1;
-		char * out_path = av[2];
+		out_path = av[2];
 		FILE * outFile = fopen(out_path, "w+");
 		if(!outFile) {
 			fprintf(stderr, "Out file path invalid.\n");
@@ -147,7 +148,6 @@ int main(int ac, char ** av) {
 		printf("Policy parser failed.\n");
 	}
 	#endif
-
 }
 
 void yyerror(char * msg) {

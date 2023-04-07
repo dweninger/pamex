@@ -1,9 +1,9 @@
 void yyerror(char * s);
 
-void do_user_assign_level(char * levelName, char * user);
-void do_user_assign_labels(char ** labelList, char * user);
-void do_file_assign_level(char * levelName, char * file);
-void do_file_assign_labels(char ** labelList, char * file);
+void do_user_assign_level(char * file_path, char * levelName, char * user);
+void do_user_assign_labels(char * file_path, char ** labelList, char * user);
+void do_file_assign_level(char * file_path, char * levelName, char * file);
+void do_file_assign_labels(char * file_path, char ** labelList, char * file);
 char ** do_label_list(char * labels);
 char * do_concat_labels(char * label);
 void do_define_level(char * levelName, int placement);

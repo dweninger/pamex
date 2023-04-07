@@ -18,7 +18,6 @@
 
 int file_paths_size;
 char ** file_paths;
-int db_accessed = 0;
 
 int main(int ac, char ** av) {
 
@@ -48,9 +47,15 @@ int main(int ac, char ** av) {
 		exit(EXIT_FAILURE);
 	}
 
+	FILE * out_file = fopen(user_db_path, "w");
+	if(out_file == NULL) {
+		fprintf(stderr, "Error creating output file.\n");
+		exit(EXIT_FAILURE);
+	}	
+	fclose(out_file);
+
 	// Read file_in line by line	
 	while((read = getline(&line, &len, file_in)) != -1) {
-		printf("readline %s\n", line);
 		// read line data and separate into vars based on space delimiter
 		char * assignment_type;
 		char * assignee;
@@ -97,22 +102,20 @@ void assign_level_to_file(char * assignee, char * assignment_data, char * path_t
 	FILE * file; 
 	if(file = fopen(file_path, "r")) {
 		fclose(file);
+		// Assign level to file
+		if(setxattr(file_path, "security.fsc.level", assignment_data, strlen(assignment_data), 0) == -1) {    
+			setxattr_error_prints();
+			fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", assignment_data, file_path, errno);
+			exit(EXIT_FAILURE);
+		}
 	} else {
 		fprintf(stderr, "File %s does not exist\n", file_path);
-		exit(EXIT_FAILURE);
 	}
 
-	// Assign level to file
-	if(setxattr(file_path, "security.fsc.level", assignment_data, strlen(assignment_data), 0) == -1) {    
-		setxattr_error_prints();
-		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", assignment_data, file_path, errno);
-		exit(EXIT_FAILURE);
-        }
 	file_path = "";
 }
 
 void assign_label_to_file(char * assignee, char * assignment_data, char * path_to_files) {
-	printf("assign label to file\n");	
 	errno = 0;
 	size_t file_path_len = strlen(assignee) + strlen(path_to_files) + 1;
 
@@ -133,17 +136,12 @@ void assign_label_to_file(char * assignee, char * assignment_data, char * path_t
 	FILE * file; 
 	if(file = fopen(file_path, "r")) {
 		fclose(file);
-	} else {
-		fprintf(stderr, "File %s does not exist.\n", file_path);
-		exit(EXIT_FAILURE);
-	}
-
-	char * xattr = malloc(500);
+		char * xattr = malloc(500);
 	int xattr_size = getxattr(file_path, "security.fsc.labels", xattr, 500);
 	if(xattr_size == -1) {
 		getxattr_error_prints();
 		fprintf(stderr, "Error getting label attributes for file %s - Errno: %d\n", file_path, errno);
-                exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
 	}
 	// If the file does not already have a label attribute, create it
 	// else, add to existing file label attribute
@@ -178,10 +176,12 @@ void assign_label_to_file(char * assignee, char * assignment_data, char * path_t
 		}
 	}
 	file_path = "";
+	} else {
+		fprintf(stderr, "File %s does not exist.\n", file_path);
+	}
 }
 
 int label_exists_in_xattrs(char * check_label, char * file_json) {
-	printf("label exists in xattrs\n");	
 	regex_t reegex;
 	// Build JSON object to search for
 	char * prefix = "({|:)";
@@ -201,71 +201,72 @@ int label_exists_in_xattrs(char * check_label, char * file_json) {
 }
 	
 void write_user_level_to_db(char * assignee, char * assignment_data, char * user_db_out_path) {
-	printf("write user level to db %s | %s | %s\n", assignee, assignment_data, user_db_out_path);
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	
-	// clear the db if this is the first time accessing it
-	if(!db_accessed) {
-		fclose(fopen(user_db_out_path, "w"));
-	}
 
 	FILE * out_file = fopen(user_db_out_path, "a");
  	if(out_file == NULL) {
-		fprintf(stderr, "Error reading or creating output file.\n");
+		fprintf(stderr, "Error creating output file.\n");
 		exit(EXIT_FAILURE);
-	}	
-
-	if(!db_accessed) {
-		db_accessed = 1;
 	}
 
 	fprintf(out_file, "%s:%s\n", assignee, assignment_data);
 	fclose(out_file);
 }
 
-void write_user_label_to_db(char * assignee, char * assignment_data, char * user_db_out_path) {
-	printf("write user label to db\n");
-	FILE * out_file = fopen(user_db_out_path, "r");
-	char * line = NULL;
-	size_t len = 0;
-	ssize_t read;
-	int found_user = 0;
-	char * out_string = malloc(1024);
+void write_user_label_to_db(char *assignee, char *assignment_data, char *user_db_out_path) {
+    FILE *fp;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int line_num = 0;
+    int found_line = 0;
+    char *out_string = malloc(sizeof(char) * 1024);
+    out_string[0] = '\0'; // initialize with null terminator
 
-	if(out_file == NULL) {
-		fprintf(stderr, "Output file does not exist for writing label.\n");
-		exit(EXIT_FAILURE);
-	}
+    fp = fopen(user_db_out_path, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "Error opening file %s\n", user_db_out_path);
+        exit(EXIT_FAILURE);
+    }
 
-	while((read = getline(&line, &len, out_file)) != -1) {
-		char * token = strtok(strdup(line), ":");
-		if(strcmp(token, assignee) == 0) {
-			line[strcspn(line, "\n")] = 0;
-			strcat(out_string, line);
-			strcat(out_string, ":");
-			strcat(out_string, assignment_data);
-			strcat(out_string, "\n");
-			found_user = 1;
-		} else {
-			strcat(out_string, line);
-		}
-	}
-	fclose(out_file);
+    while ((read = getline(&line, &len, fp)) != -1) {
+        line_num++;
+        char *token = strtok(strdup(line), ":");
+        if (strcmp(token, assignee) == 0) {
+            line[strcspn(line, "\r\n")] = 0;
+            strcat(out_string, line);
+            strcat(out_string, ":");
+            strcat(out_string, assignment_data);
+            strcat(out_string, "\n");
+            found_line = 1;
+        } else {
+            strcat(out_string, line);
+        }
+    }
 
-	out_file = fopen(user_db_out_path, "w");
-	fprintf(out_file, "%s", out_string);
+    if (!found_line) {
+        fprintf(stderr, "Error: could not find line starting with %s\n", assignee);
+        exit(EXIT_FAILURE);
+    }
+	fflush(fp);
+    fclose(fp);
 
-	if(!found_user){
-		fprintf(stderr, "Could not find user that label belongs to.\n");
-		exit(EXIT_FAILURE);
-	}
-	free(out_string);
+    fp = fopen(user_db_out_path, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "Error opening file %s\n", user_db_out_path);
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(fp, "%s", out_string);
+	fflush(fp);
+    fclose(fp);
+    free(out_string);
 }
 
+
 int file_already_accessed(char * file) {
-	printf("file already accessed\n");
 	int index = 0;
 	char * cur_file = NULL;
 	if(file_paths[0]) {

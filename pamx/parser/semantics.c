@@ -32,11 +32,11 @@ void Finish() {
  * level_name  the name of the level that is being written
  * user  the name of the user that is being written
  */
-void do_user_assign_level(char * level_name, char * user) {
+void do_user_assign_level(char * file_path, char * level_name, char * user) {
 	symbol * sym = lookup(level_name, LEVEL);
 	char * level_data = format_level_data(sym);
 	
-	FILE * out_file = fopen("../data/policy-out.txt", "a");
+	FILE * out_file = fopen(file_path, "a");
 	fprintf(out_file, "USER_LEVEL %s %s\n", user, level_data);
 	fclose(out_file);
 }
@@ -46,12 +46,12 @@ void do_user_assign_level(char * level_name, char * user) {
  * label_list  a string list of labels that are being written
  * user  the name of the user that is being written
  */
-void do_user_assign_labels(char ** label_list, char * user) {	
+void do_user_assign_labels(char * file_path, char ** label_list, char * user) {	
 	int label_list_size = sizeof(label_list) / sizeof(label_list[0]);
 	int index = 0;
 	char * cur = label_list[index];
 	while(cur != NULL) {
-		FILE * out_file = fopen("../data/policy-out.txt", "a");
+		FILE * out_file = fopen(file_path, "a");
 		fprintf(out_file, "USER_LABELS %s %s\n", user, label_list[index]);
 		fclose(out_file);
 
@@ -67,11 +67,11 @@ void do_user_assign_labels(char ** label_list, char * user) {
  * file  the path of the file that the level will be assigned to
  */
 
-void do_file_assign_level(char * level_name, char * file) {
+void do_file_assign_level(char * file_path, char * level_name, char * file) {
 	symbol * sym = lookup(level_name, LEVEL);
 	char * level_data = format_level_data(sym);
 	
-	FILE * out_file = fopen("../data/policy-out.txt", "a");
+	FILE * out_file = fopen(file_path, "a");
 	fprintf(out_file, "FILE_LEVEL %s %s\n", file, level_data);
 	fclose(out_file);
 }
@@ -82,12 +82,12 @@ void do_file_assign_level(char * level_name, char * file) {
  * label_list  a list of strings that contain the names of labels
  * file  the path of the file that the labels will be assigned to
  */
-void do_file_assign_labels(char ** label_list, char * file) {
+void do_file_assign_labels(char * file_path, char ** label_list, char * file) {
 	int label_list_size = sizeof(label_list) / sizeof(label_list[0]);
 	int index = 0;
 	char * cur = label_list[index];
 	while(cur != NULL) {
-		FILE * out_file = fopen("../data/policy-out.txt", "a");
+		FILE * out_file = fopen(file_path, "a");
 		fprintf(out_file, "FILE_LABELS %s %s\n", file, label_list[index]);
 		fclose(out_file);
 
