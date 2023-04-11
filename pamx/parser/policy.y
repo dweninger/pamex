@@ -18,7 +18,7 @@ extern int yytext();
 int printFlag = 0;
 int levels = 0;
 char * out_path;
-
+char * level_db_path;
 %}
 
 %union {
@@ -69,7 +69,7 @@ stmt		:	USERASSIGN level_name ASSIGN user';'				{ do_user_assign_level(out_path,
 			|   FILEASSIGN level_name label_list ASSIGN file';'		{ do_file_assign_level(out_path, $2, $5); do_file_assign_labels(out_path, $3, $5); free($2); free($3); free($5); }
 			|	FILEASSIGN label_list ASSIGN file';'				{ do_file_assign_labels(out_path, $2, $4); free($2); free($4); }
 			|	LABEL label_name';' 								{ do_define_label($2); }
-			|	LEVEL level_name op';'								{ do_define_level($2, $3); };
+			|	LEVEL level_name op';'								{ do_define_level($2, $3, level_db_path); };
 label_list	:	'['labels']'										{ $$ = do_label_list($2); };
 labels		:	label_name											{ $$ = do_concat_labels($1); }
 			|	label_name',' labels								{ $$ = do_concat_labels($1); };	
@@ -80,7 +80,7 @@ label_name 	:	id													{ $$ = $1; };
 op	 		:	'('set_res')'										{ $$ = $2; }
    			|	'('op_var')'										{ $$ = $2; };	
 op_var		:	CMP id												{ $$ = do_comp($1, $2); };
-set_res		:	SET res												{ $$ = do_set($2); };
+set_res		:	SET res												{ $$ = do_set($2, level_db_path); };
 res			:	LEVELLIT											{ $$ = $1; };
 id 			: 	ID													{ $$ = $1; };
 
@@ -116,8 +116,8 @@ int main(int ac, char ** av) {
 	}
 
 	#else
-	if(ac != 4 || (strcmp(av[3], "-p") != 0 && strcmp(av[3], "-k") != 0)) {
-		fprintf(stderr, "usage: %s <file_in> <file_out> (-p | -k)\n", av[0]);
+	if(ac != 5 || (strcmp(av[4], "-p") != 0 && strcmp(av[4], "-k") != 0)) {
+		fprintf(stderr, "usage: %s <file_in> <file_out> <level_db_out> (-p | -k)\n", av[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -127,7 +127,7 @@ int main(int ac, char ** av) {
 		exit(1);
 	}
 
-	if(strcmp(av[3], "-p") == 0) {
+	if(strcmp(av[4], "-p") == 0) {
 		printFlag = 1;
 		out_path = av[2];
 		FILE * outFile = fopen(out_path, "w+");
@@ -135,8 +135,16 @@ int main(int ac, char ** av) {
 			fprintf(stderr, "Out file path invalid.\n");
 			exit(EXIT_FAILURE);
 		}
+		level_db_path = av[3];
+		FILE * levelDBFile = fopen(level_db_path, "w+");
+		if(!levelDBFile) {
+			fprintf(stderr, "Level database output path is invalid.\n");
+			exit(EXIT_FAILURE);
+		}
 		fprintf(outFile, "");
 		fflush(outFile);
+		fprintf(levelDBFile, "");
+		fflush(levelDBFile);
 	} else {
 		printf("Kernel reading not yet implemented.\n");
 		exit(EXIT_FAILURE);	

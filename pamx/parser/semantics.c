@@ -142,7 +142,7 @@ char * do_concat_labels(char * label) {
  * level_name  the name of the level to be added
  * placement  the hierarchy ranking of the level to be added
  */
-void do_define_level(char * level_name, int placement) {	
+void do_define_level(char * level_name, int placement, char * level_db_path) {	
 	// Find if level in symtab already exists or create new symbol for level
 	symbol * sym = lookup(level_name, LEVEL);
 	
@@ -166,6 +166,7 @@ void do_define_level(char * level_name, int placement) {
 	// add level to placements array
 	level_placements[placement] = sym;
 	levels++;
+	print_level_placements(level_db_path);
 }
 
 /**
@@ -185,8 +186,8 @@ void shift_level_placements(int pos) {
  * print_level_placements - prints all of the level placements in the level_placements array.
  * 	(used for debugging)
  */
-void print_level_placements() {
-	FILE * levels_fp = fopen("../data/level_order.txt", "w");
+void print_level_placements(char * level_db_path) {
+	FILE * levels_fp = fopen(level_db_path, "w");
 	int i = 0;
 	while(level_placements[i] && strcmp(level_placements[i]->name, "") != 0){
 		fprintf(levels_fp, "%s:%d\n", level_placements[i]->name, i);
@@ -242,10 +243,10 @@ int do_comp(int op, char * id) {
  * res  checks if the level is restricted or unrestricted
  * returns  int containing the level placement
  */
-int do_set(int res) {
+int do_set(int res, char * level_db_path) {
 	if(levels == 0) {
 		if(res != 0) {
-			do_define_level("unrestricted", 0);
+			do_define_level("unrestricted", 0, level_db_path);
 		}
 	}	
 	// check if level is unrestricted or restricted
