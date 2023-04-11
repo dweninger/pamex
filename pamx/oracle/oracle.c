@@ -146,6 +146,7 @@ int main (int argc, char ** argv) {
             printf("File path: ");
             char targeted_file_path[100];
             scanf("%s", targeted_file_path);
+	    int xattr_size = 0;
 
             FILE * targeted_file = fopen(targeted_file_path, "r");
             if(!targeted_file) {
@@ -156,29 +157,36 @@ int main (int argc, char ** argv) {
 
             char * level_name = "unclassified";
             int level_placement = 0;
-            char * level_xattr = malloc(500);
-            int xattr_size = getxattr(targeted_file_path, "security.fsc.level", level_xattr, 500);
+	    char level_xattr[501]; // allocate an extra byte for the null-terminator
+            xattr_size = getxattr(targeted_file_path, "security.fsc.level", level_xattr, 500);
+            level_xattr[xattr_size] = '\0'; // manually null-terminate the buffer
             if(xattr_size != -1) {
-                char * token = strtok(level_xattr, ":");
-                level_name = strdup(token);
-	            token = strtok(NULL, ":");
+                char * level_token = strtok(strdup(level_xattr), ":");
+                level_name = strdup(level_token);
+		level_token = strtok(NULL, ":");
                 level_placement = get_file_level(targeted_file_path, level_db_path);
-            }
-
+            	level_token = "\0";
+	    }
+            
             printf("{\"file\" : \"%s\", \"level\" : \"%s\", \"placement\" : \"%d\", \"labels\" : [", targeted_file_path, level_name, level_placement);
-            char * label_xattr = malloc(500);
-            xattr_size = getxattr(targeted_file_path, "security.fsc.labels", label_xattr, 500);
+            
+            char label_xattr[501]; // allocate an extra byte for the null-terminator
+	    xattr_size = getxattr(targeted_file_path, "security.fsc.labels", label_xattr, 500);
+	    label_xattr[xattr_size] = '\0'; // manually null-terminate the buffer
+
             if(xattr_size != -1) {
-               char * token = strtok(label_xattr, ":");
-                while(token) {
-                    printf("{\"name\" : \"%s\"}, ", token);
-                    token = strtok(NULL, ":");
+               	char * label_token = strtok(label_xattr, ":");
+                while(label_token) {
+                    printf("{\"name\" : \"%s\"}, ", label_token);
+		    label_token = "\0";
+                    label_token = strtok(NULL, ":");
                 } 
             }
             printf("]}\n");
         } else {
             printf("Not a valid command. Type help for a list of commands.\n");
         }
+	//
 
     LOOP:
         printf(" > ");
