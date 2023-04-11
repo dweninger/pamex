@@ -1,11 +1,3 @@
-/**
- * PAM Module for creating a sudo-proc file when the user signs in.
- * 	The sudo-proc file contains user information from the userdb
- * 
- * Author: Daniel Weninger
- * Last Modified: 3/27/2023
-*/
-
 #include <security/pam_modules.h>
 #include <security/pam_misc.h>
 #include <sys/xattr.h>
@@ -19,105 +11,114 @@
 #include <ftw.h>
 #include <unistd.h>
 
-void create_proc_file(int cpid, char * file_path, char * user_info);
-void makedir(char * path);
-char * get_user_from_db(char * username, FILE * targeted_users_db_file);
+int createprocfile(int cpid, char * filepath, char * userInfo);
+int makedir(char * path);
+char * getUserFromDB(char * username, FILE * targetedUsersDBFile);
+void getxattrErrorPrints();
 
-/**
- * create_proc_file - creates the directories for the sudo-proc file
- * 	and writes to file
- * cpid - the process ID
- * file_path - the path to sudo_proc directory
- * user_info - the pamx information from the userdb
-*/
-void create_proc_file(int cpid, char * file_path, char * user_info) {
-	strcat(file_path, "/sudo_proc");
-        makedir(file_path);
-	char * temp_file = malloc(sizeof(char) * 200);
-	sprintf(temp_file, "%s/%d", file_path, cpid);
-	sprintf(file_path, "%s", temp_file);
-	makedir(file_path);
-	sprintf(temp_file, "%s/attr", file_path);
-	sprintf(file_path, "%s", temp_file);
-	makedir(file_path);
-	sprintf(temp_file, "%s/current", file_path);
-	sprintf(file_path, "%s", temp_file);
-	FILE * procFP = fopen(file_path, "w");
-	fprintf(procFP, "%s", user_info);
+int createprocfile(int cpid, char * filepath, char * userInfo) {
+	strcat(filepath, "/sudo_proc");
+	if (!makedir(filepath)) {
+        	return 0;
+    	}
+
+	char * tempfile = malloc(sizeof(char) * 200);
+	sprintf(tempfile, "%s/%d", filepath, cpid);
+	sprintf(filepath, "%s", tempfile);
+	if (!makedir(filepath)) {
+        	return 0;
+    	}
+
+	sprintf(tempfile, "%s/attr", filepath);
+	sprintf(filepath, "%s", tempfile);
+	if (!makedir(filepath)) {
+        	return 0;
+    	}
+
+	sprintf(tempfile, "%s/current", filepath);
+	sprintf(filepath, "%s", tempfile);
+	FILE * procFP = fopen(filepath, "w");
+	fprintf(procFP, "%s", userInfo);
 	fclose(procFP);
+	return 1;
 }
 
-/**
- * makedir - make a directory if it does not already exist
- * path - the path to the directory to make
-*/
-void makedir(char * path) {
+int makedir(char * path) {
 	struct stat st = {0};
 	if (stat(path, &st) == -1) {
 		if (mkdir(path, 0777) == -1) {
 			fprintf(stderr, "Error creating directory: %s\n", path);
+			return 0;
 		}
 	}
+	return 1;
 }
 
 /**
- * get_user_from_db - get the hierarchical info of the user from the targeted
+ * getUserLevel - get the hierarchical level of the user from the targeted
  * users database
- * username - the username of the user that is signed in
- * targeted_users_db_file - the filepointer of the targeted users DB
+ * username  - the username of the user that is signed in
+ * targetedUsersDBFile - the filepointer of the targeted users DB
  */
-char * get_user_from_db(char * username, FILE * targeted_users_db_file) {
+char * getUserFromDB(char * username, FILE * targetedUsersDBFile) {
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	while((read = getline(&line, &len, targeted_users_db_file)) != -1) {
+	while((read = getline(&line, &len, targetedUsersDBFile)) != -1) {
 		char * token = strtok(strdup(line), ":");
 		if(strcmp(token, username) == 0) {
 			free(token);
 			return strdup(line);
 		}
 	}
-	return NULL;
+	return "";
 }
-/**
- * pam_sm_authenticate - executes on PAM auth keyword such as in system-auth. Creates
- * 	a sudo-proc file which contains signed in user's Pamx classification information
-*/
+
+void getxattrErrorPrints() {
+        printf("E2BIG: %d\nENODATA: %d\nENOTSUP: %d\nERANGE:%d\n", E2BIG, ENODATA, ENOTSUP, ERANGE);
+}
+
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	char *username = NULL;
 	int cpid = getpid();
-	char * file_path = malloc(200 * sizeof(char));
+	char * filepath = NULL;
+	int ret = 0;	
 	
 	// Get the username
 	if (pam_get_user(pamh, (const char **)&username, NULL) != PAM_SUCCESS || username == NULL) {
+		// Could not find user
+		fprintf(stderr, "Could not find username.\n");
 		return PAM_AUTH_ERR;
 	}
-	// check args are valid
+
 	if(argc != 2) {
 		printf("usage: <path_to_users_db> <dest_dir>");
 		return PAM_IGNORE;
 	}
-	// find targeted user db file and create file pointer
-	char * targeted_users_db_path = strdup(argv[0]);
-	FILE * targeted_users_db_file = fopen(targeted_users_db_path, "r");
-	if(!targeted_users_db_file) {
-		fprintf(stderr, "No targeted users DB file at %s\n", targeted_users_db_path);
+	char * targetedUsersDBPath = strdup(argv[0]);
+
+	FILE * targetedUsersDBFile = fopen(targetedUsersDBPath, "r");
+	if(!targetedUsersDBFile) {
+		fprintf(stderr, "No targeted users DB file at %s\n", targetedUsersDBPath);
 		return PAM_IGNORE;
 	}
-	// get the user information of the current signed in user from the db
-	char * user_info = strdup(get_user_from_db(username, targeted_users_db_file));
-	fclose(targeted_users_db_file);
-	if(user_info == NULL) {
+
+	char * userInfo = strdup(getUserFromDB(username, targetedUsersDBFile));
+	fclose(targetedUsersDBFile);
+	if(strcmp(userInfo, "") == 0){
 		// If the user is not found in the user DB
 		// give them level unrestricted
-		char * user_info_temp = malloc(500);
-		sprintf(user_info_temp, "%s:unrestricted:0", username);
-		user_info = strdup(user_info_temp);
+		fprintf(stderr, "User not found in user DB\n");
+		char * userInfoTemp = malloc(500);
+		sprintf(userInfoTemp, "%s:unrestricted:0", username);
+		userInfo = strdup(userInfoTemp);
 	}
-	
-	file_path = strdup(argv[1]);
-	
-	create_proc_file(cpid, file_path, user_info);
+	filepath = strdup(argv[1]);
+	ret = createprocfile(cpid, filepath, userInfo);
+	if(ret == 0) {
+		fprintf(stderr, "Cannot create file at specified location.\n");
+		return PAM_IGNORE;
+	}
 	return PAM_SUCCESS;
 }
 
@@ -140,3 +141,4 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 PAM_EXTERN int pam_sm_chauthtok(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	return PAM_SUCCESS;
 }
+
