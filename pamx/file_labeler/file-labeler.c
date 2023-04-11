@@ -106,7 +106,7 @@ int add_label(char * file_path, char * label_name) {
         sprintf(new_labels, "%s:%s", xattr, label_name);
     }
 
-    if(setxattr(file_path, "security.fsc.label", new_labels, strlen(new_labels), 0) == -1) {    
+    if(setxattr(file_path, "security.fsc.labels", new_labels, strlen(new_labels), 0) == -1) {    
 		setxattr_error_prints();
 		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", new_labels, file_path, errno);
 		exit(EXIT_FAILURE);
@@ -130,7 +130,7 @@ int remove_label(char * file_path, char * label_name) {
         strcat(new_labels, strdup(file_labels[i]));
         i++;
 	}
-     if(setxattr(file_path, "security.fsc.label", new_labels, strlen(new_labels), 0) == -1) {    
+     if(setxattr(file_path, "security.fsc.labels", new_labels, strlen(new_labels), 0) == -1) {    
 		setxattr_error_prints();
 		fprintf(stderr, "Error setting level attribute %s for file %s - Errno: %d\n", new_labels, file_path, errno);
 		exit(EXIT_FAILURE);
@@ -187,7 +187,10 @@ char ** get_file_labels_except(char * targeted_file_path, char * label_name) {
             label_list[index] = strdup(token);
             token = strtok(NULL, ":");
             index++;
-        }
+        } else {
+		token = strtok(NULL, ":");
+	}
+
 	}
 	return label_list;
 }
