@@ -15,4 +15,8 @@ file-assign secret -> file1.txt;
 
 file-assign confidential [more-access, extra-access] -> file2.txt;
 
-user-assign top-secret [additional] -> adam;
+file-assign secret -> file3.txt;
+
+user-assign top-secret [additional] -> daniel;
+
+user-assign secret [more-access] -> alice;
