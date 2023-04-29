@@ -1,0 +1,3 @@
+level confidential (set restricted);
+
+file-assign confidential -> ./assignment_files/file1.txt;

@@ -1,0 +1,22 @@
+# This is a comment
+
+# Define Levels and Labels #
+level non-confidential (set unrestricted);
+level confidential (set restricted);
+level secret (> confidential);
+label additional;
+label more-access;
+label extra-access;
+level top-secret (> secret);
+level extra-secret (< top-secret);
+
+# Assign Levels and Labels to Files #
+file-assign secret -> file1.txt;
+
+file-assign confidential [more-access, extra-access] -> file2.txt;
+
+file-assign secret -> file3.txt;
+
+user-assign top-secret [additional] -> daniel;
+
+user-assign secret [more-access] -> alice;

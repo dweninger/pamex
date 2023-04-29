@@ -1,0 +1,5 @@
+non-confidential:0
+confidential:1
+secret:2
+extra-secret:3
+top-secret:4
