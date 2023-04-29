@@ -1,0 +1,44 @@
+\section{Future Work}
+\label{sec:FutureWork}
+\par 
+\vspace{\baselineskip}
+\hspace{1em}
+PAMEx performs its designed job of being a custom-built 
+security policy compiler which allows for more dynamic security 
+policies than the default, binary policy that SimpleFlow currently 
+enforces. PAMEx gives the privileged user the opportunity to create 
+full hierarchical security policies on a system complete with both 
+levels and labels. Although PAMEx is presented from end-to-end as a 
+working security tool suite, the lack of a custom-built kernel prevents 
+it from behaving as a fully-fledged security module. Therefore, the 
+tool suite as it stands was not and is not able to be incorporated 
+directly into the SimpleFlow project as an automatically enforced 
+security policy module. Using the Oracle tool to simulate the security 
+policies created by PAMEx is an excellent way to show PAMEx working 
+from end to end but does not allow PAMEx to be used in a fully-fledged 
+production setting like SimpleFlow for which it was designed. In the 
+future, for the PAMEx project to be incorporated into SimpleFlow or as 
+a standalone Linux security policy in general, the project will need 
+to have a custom kernel developed for it. With the development of a 
+custom kernel, PAMEx would be able to perform several tasks that 
+it currently is not able to as described in Section 3.7. 
+
+The file labeler tool was developed to provide the ability to quickly 
+change, set, or remove the PAMEx security information from a file. In 
+future work, a tool could be developed to perform similar functionality 
+with user security information. With the current iteration of PAMEx, if 
+a privileged, administrative user wants to add, remove, or in some way 
+modify a user’s PAMEx security information, the administrator would 
+need to start from the compilation process and work through each step 
+of the PAMEx system. The development of a new user labeler tool would 
+allow the administrator to skip some of the steps of the process should 
+they find the need to modify the security information of system users. 
+
+The need for PAMEx to be incorporated into and working 
+alongside SimpleFlow still stands. Porting PAMEx into SimpleFlow is a 
+significant undertaking and one that would need to be done only after a 
+custom kernel has been developed for PAMEx. Even though SimpleFlow was 
+also developed in C, PAMEx was developed 
+outside of SimpleFlow. Therefore, future work will need to be done to 
+ensure that PAMEx works how it is supposed to in conjunction with 
+SimpleFlow. 

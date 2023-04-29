@@ -1,12 +1,21 @@
 \documentclass[letterpaper,12pt]{report}
-\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
-\usepackage{fancyhdr,tocloft,natbib,url,graphicx,float,listings,sidecap,wrapfig}
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr,tocloft,url,graphicx,float,listings,sidecap,wrapfig}
+\usepackage[numbers]{natbib}
 \usepackage[font=small,labelfont=bf,labelsep=period]{caption}
 \usepackage{tabularx}
 \usepackage{setspace}
-\usepackage{hyperref}
-\usepackage[all]{hypcap}
+% \usepackage{hyperref}
+% \usepackage[all]{hypcap}
 \usepackage{qtree,algorithm,algorithmic}
+\usepackage{tcolorbox}
+\usepackage{textcomp}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{times}
+\usepackage[utf8]{inputenc}
+
 \pagestyle{plain}
 \fancyhf{}
 \lhead{}
@@ -18,15 +27,15 @@
 %\floatstyle{boxed}
 %\restylefloat{figure}
 
-\hypersetup {
-	colorlinks=false,
-	pdfborder={0 0 0},
-}
+% \hypersetup {
+% 	colorlinks=false,
+% 	pdfborder={0 0 0},
+% }
 
 \setcounter{secnumdepth}{3}
 \renewcommand*\thesection{\arabic{section}.}
-\renewcommand*\thesubsection{\thesection \arabic{subsection}.}
-\renewcommand*\thesubsubsection{\thesubsection \arabic{subsubsection}.}
+\renewcommand*\thesubsection{\thesection\arabic{subsection}.}
+\renewcommand*\thesubsubsection{\thesubsection\arabic{subsubsection}.}
 
 \setcounter{tocdepth}{3}
 \renewcommand\contentsname{}				% TOC title
@@ -35,12 +44,21 @@
 \setlength\cftaftertoctitleskip{-0.5in}
 \setlength\cftafterloftitleskip{-0.5in}
 \setlength\cftafterlottitleskip{-0.5in}
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
 
-\renewcommand\bibsection{\section{References}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,fill=black,inner sep=1pt] (char) {\textcolor{white}{\small\bfseries #1}};}}
+
+            \lstset{
+                basicstyle=\ttfamily,
+                breakindent=2em,
+            }
 
 \begin{document}
 
-\hypersetup{pageanchor=false}
+% \hypersetup{pageanchor=true}
 %%  COVER PAGE
 \input{cover}	
 \clearpage
@@ -49,44 +67,61 @@
 \input{signature}
 \clearpage
 
-\hypersetup{pageanchor=true}
+% \hypersetup{pageanchor=true}
 \setcounter{page}{1}
 \pagenumbering{roman}
 \renewcommand\arraystretch{1.5}
 
 %% ABSTRACT
+\vspace*{0.5in}
 \section*{Abstract}
 \addcontentsline{toc}{section}{Abstract}
-Student, Johnny Q., ``\(P = NP\),'' Master of Software Engineering, May 2011, (Albert Einstein, Ph.D.). \\
+Weninger, Daniel, ``PAMEx: A Compiler and Tools to Support a 
+More Flexible Security Policy for Simpleflow'' Master of Software 
+Engineering, May 2023, (W. Michael Petullo, Ph.D.). \\
 
-This manuscript describes \ldots
+This manuscript describes the design and implementation of PAMEx, a custom-built Linux security tool 
+suite that uses several aspects of modern Linux security modules to enforce its policies. 
+The tool suite uses extended attributes to define file security information, a custom Pluggable Authentication Module (PAM) 
+to define actions that occur when a user authenticates on a system, 
+and a custom compiler developed with Flex and Bison. PAMEx was developed as a security enhancement for SimpleFlow, 
+a project that uses information flows to enforce policies. The way that PAMEx provides this enhancement to SimpleFlow 
+is by being able to classify and compartmentalize file security as hierarchical levels, and non-hierarchical labels 
+rather than the binary policy that SimpleFlow currently has in place. 
+As a simulation, a tool was created and given the name Oracle that, when queried, 
+will output a response as to if a user has access to a particular file. This paper gives an overview of the design and 
+implementation choices made during the development of PAMEx and future work that could be done to maintain and improve the project. 
 \clearpage
 
 %%% ACKNOWLEDGEMENTS
+\vspace*{0.5in}
 \section*{Acknowledgements}
 \addcontentsline{toc}{section}{Acknowledgments}
-\ldots
+I would like to give my sincerest gratitude and thanks to my advisor, Dr. Petullo. Without whom I would not have been able to get as far as I had or learn as much as I did during the development of my capstone project.
 \clearpage
 
 %% TABLE OF CONTENTS
+\vspace*{0.5in}
 \section*{Table of Contents}
 \tableofcontents
 \clearpage
 
 
-%% LIST OF TABLES
-\section*{List of Tables}
-\addcontentsline{toc}{section}{List of Tables}
-\listoftables
-\clearpage
+% %% LIST OF TABLES
+% \section*{List of Tables}
+% \addcontentsline{toc}{section}{List of Tables}
+% \listoftables
+% \clearpage
 
 %% LIST OF FIGURES
+\vspace*{0.5in}
 \section*{List of Figures}
 \addcontentsline{toc}{section}{List of Figures}
 \listoffigures
 \clearpage
 
 %% GLOSSARY
+\vspace*{0.5in}
 \section*{Glossary}
 \addcontentsline{toc}{section}{Glossary}
 \input{glossary}
@@ -96,18 +131,66 @@ This manuscript describes \ldots
 \pagenumbering{arabic}
 
 \IfFileExists{section01/section}{\input{section01/section}}{}\clearpage
-\IfFileExists{section02/section}{\input{section02/section}}{}\clearpage
 \IfFileExists{section03/section}{\input{section03/section}}{}\clearpage
 \IfFileExists{section04/section}{\input{section04/section}}{}\clearpage
+\IfFileExists{section04/section}{\input{section05/section}}{}\clearpage
+\IfFileExists{section04/section}{\input{section06/section}}{}\clearpage
+\IfFileExists{section04/section}{\input{section07/section}}{}\clearpage
 
 %% BIBLIOGRAPHY
-\section{Bibliography}
-\label{sec:bibliougraphy}
+% \section*{Bibliography}
+\begin{thebibliography}{14}
+    \addcontentsline{toc}{section}{Bibliography}
+
+\bibitem{jorgensen2021}
+Jorgensen, Paul C. \textit{Software Testing: A Craftsmans Approach}. Auerbach Publications, 2021.
+
+\bibitem{kung2014}
+Kung, David C. \textit{Object-Oriented Software Engineering: An Agile Unified Methodology}. McGraw-Hill, 2014.
+
+\bibitem{lauber}
+Pluggable Authentication Modules (PAM), https://www.redhat.com/sysadmin/pluggable-authentication-modules-pam, last accessed 15 April 2023.
+
+\bibitem{lacey2015}
+Lacey, Mitch. \textit{The Scrum Field Guide: Practical Advice For Your First Year}. Addison-Wesley, 2015.
+
+\bibitem{levine2009}
+Levine, John. \textit{Flex \& Bison}. O'Reilly, 2009.
+
+\bibitem{levine1995}
+Levine, John R., et al. \textit{Lex \& Yacc}. O'Reilly, 1995.
+
+\bibitem{kerneldocs}
+The Linux Kernel Documentation, https://www.kernel.org/doc/html/latest/, last accessed 15 April 2023.
+
+\bibitem{linuxpam}
+Linux-Pam/Linux-Pam: Linux PAM (Pluggable Authentication Modules for Linux) Project, https://github.com/linux-pam/linux-pam, last accessed 15 April 2023.
+
+\bibitem{man7pam}
+Linux-PAM, ``pam - Pluggable Authentication Modules for Linux'', Linux-PAM Manual, Release 1.3.1, 2020.
+
+\bibitem{natsecinfo}
+Senate Select Committee on Intelligence. ``National Security Information'' Senate Select Committee on Intelligence, https://www.intelligence.senate.gov/laws/national-security-information
+
+\bibitem{ryan2016}
+Ryan Johnson, Jessie Lass, W. Michael Petullo. ``Studying Naive Users and the Insider Threat with SimpleFlow'' Proceedings of the 8th ACM CCS International Workshop on Managing Insider Security Threats, 2016.
+
+\bibitem{scrumorg}
+What is Scrum?, https://www.scrum.org/learning-series/what-is-scrum, last accessed 15 April 2023.
+
+\bibitem{selinux}
+SELinux Project, https://selinuxproject.org/, last accessed 15 April 2023.
+
+\bibitem{man7xattr}
+T. Ts'o, ``xattr - Extended attributes,'' Linux Programmer's Manual, xattr(7), 2021.
+
+\end{thebibliography}
+
 \clearpage
 
-%%% APPENDICES
-\section{Appendices}
-\label{sec:appendices}
-\clearpage
+% %%% APPENDICES
+% \section{Appendices}
+% \label{sec:appendices}
+% \clearpage
 
 \end{document}

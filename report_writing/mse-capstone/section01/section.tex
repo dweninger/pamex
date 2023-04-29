@@ -1,18 +1,140 @@
 \section{Introduction}
+\newcounter{numitem}
+
 \label{sec:Introduction}
+\vspace{\baselineskip}
 
-\subsection{Overview} 
-This gives a brief overview of this section.
+\subsection{Background}
+\par 
+\vspace{\baselineskip}
+\hspace{1em}
+The objective of PAMEx is to work in conjunction with and enhance the 
+pre-existing project SimpleFlow, an information-flow-based access 
+control system. Even in the modern day, most access control systems 
+simply disallow read or write access to confidential files. The 
+SimpleFlow project was developed to go beyond most access control 
+systems and instead allow malicious users to access confidential 
+files up until the point of exfiltration so that SimpleFlow can monitor their activity. The way that 
+SimpleFlow achieves this is by working on top of the Linux Security 
+Module (LSM) interface and rather than simply disallowing read or write 
+access like most access control systems do, SimpleFlow instead marks a 
+file as either confidential or non-confidential. If a confidential 
+file is wrongly accessed, the malicious user’s actions are recorded as they pass 
+through the system as information flows. The wrongly accessed 
+information is then prevented from being exfiltrated by SimpleFlow's network filter. 
+SimpleFlow begins tracking the attacker’s actions as soon as they 
+attempt to access the file and therefore can capture the attacker’s 
+intentions. This leaves no room for the malicious user to come up with 
+a fabricated excuse as to why they were trying to exfiltrate sensitive 
+information. As an example of SimpleFlow’s effectiveness, when put to 
+practical use during the 2016 Cyber-Defense Exercise, the SimpleFlow 
+program proved to perform well with a small overhead. While the 
+practical exercise did not make use of all SimpleFlow’s functionality, 
+it was able to successfully use SimpleFlow’s network filter which made 
+it easy to observe any attempt at exfiltrating data. Within this 
+exercise and other testing, SimpleFlow impressed attackers who were 
+surprised to find their exfiltration attempts had failed \cite{ryan2016}. 
 
-\subsection{Point 1}
-This subsection gives a great deal of precise description supporting point 1.  For example,
-Figure \ref{State Chart} explains in great detail a \index{state chart}state chart.
+Figure~\ref{simpleflowexample} was pulled from the paper ``Studying Naive Users and the Insider Threat with SimpleFlow.''
+to depict SimpleFlow being used to prevent an exfiltration attempt of sensitive data.
+The example starts with a file on the kernel marked as \texttt{secret} which contains sensitive information.
 
-\begin{figure}[htb]
-\centering
-\includegraphics[width=.5\textwidth]{section01/assets/sample_image.png}
-\caption[Short Caption]{\label{State Chart}State Chart Diagram}
+\clearpage
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{section01/assets/simpleflow_example.png}
+    \caption[SimpleFlow Example]{SimpleFlow Being Used to Prevent Exfiltration of Sensitive Data (from \cite{ryan2016})\label{simpleflowexample}}
 \end{figure}
+\blfootnote{The above numerical SimpleFlow example items were summarized from \cite{ryan2016}}
+\begin{enumerate}[label={\protect\circled{\arabic*}}]
+    \item A malicious user uses the \texttt{cat} process to open and read the confidential data in \texttt{secret}.
+          Now any further actions processed by this user are tainted by SimpleFlow by being marked with an evil bit 
+          and are monitored by the SimpleFlow system.
+    \item The malicious user attempts to pipe and exfiltrate the information in \texttt{secret}.
+    \item The pipe is forked as a child from the \texttt{cat} process and therefore is also marked as malicious activity by SimpleFlow.
+    \item The \texttt{exfil} command reads \texttt{secret} and becomes tainted with the evil bit.
+    \item The malicious user attepts to exfiltrate the information from \texttt{secret} to a personal server. 
+          The sent packet containing \texttt{secret}'s
+          information is marked with an evil bit to be easily recognizable by SimpleFlow as an unsolicited action.
+    \item SimpleFlow's network filter notices the malicious user's attempt to exfiltrate the information from \texttt{secret}.
+          SimpleFlow sends a fake response to the request to make the malicious user think that the process is being continued.
+    \item The malicious user's exfiltration attept on \texttt{secret}'s data is ultimately blocked by SimpleFlow's network filter.
+    \item The non-threatening process \texttt{wget} is performed on the system.
+    \item SimpleFlow's network filter behaves normally and allows the \texttt{wget} process to continue.
+\end{enumerate}
 
-\subsection{Point 2}
-This gives Point 2
+
+While effective, the research prototype of SimpleFlow is limited in 
+that it cannot further specify the security policy of a file beyond 
+being confidential and non-confidential \cite{ryan2016}. A resolution 
+for SimpleFlow’s issue of a binary security system was therefore sought out and as a solution 
+a customized Linux security tool suite was devised. The system would allow the 
+privileged user to define hierarchical levels and non-hierarchical 
+labels on a system and assign them to both system users and system 
+files. This security policy was inspired by the US security 
+classification system \cite{natsecinfo} by following the structure of having both levels 
+and labels for security. The policy states that both system files and system users may each have one 
+security level and zero or more security labels. 
+
+As a running example, pretend that
+there is a software company that is working on innovative technology that they want
+to be kept secretive so that all files related to the technology are on a need-to-know basis. 
+With the security policy proposed above, the company could define a system saying which staff have
+access to what files. For example, the privileged administrative user who oversees creating the security policy 
+could define the hierarchy levels for the company from lowest to highest as
+\texttt{public}, \texttt{general\_staff}, \texttt{developer}, \texttt{administrator}, and \texttt{executive\_staff}.
+In this example, the company has also split the technology into several projects, 
+three of which are named \texttt{alpha}, \texttt{beta}, and \texttt{charlie}. If Alice is an \texttt{administrator} for
+both projects \texttt{alpha} and \texttt{beta}, then, with the newly proposed security policy,
+she would be given the hierarchical level \texttt{administrator} and the non-hierarchical labels
+\texttt{alpha} and \texttt{beta}. 
+
+Continuing the above example, pretend that there is a file to outline how to begin development on project \texttt{alpha} called
+\texttt{alpha}\texttt{\_dev}\texttt{\_instructions.txt}. The privileged administrator could assign \texttt{alpha}\texttt{\_dev}\texttt{\_instructions.txt} 
+the security level \texttt{developer} and the security label \texttt{alpha}. Alice, who has the security level of \texttt{administrator}
+which is placed higher than \texttt{developer} in the level hierarchy 
+and who contains the security label \texttt{alpha} can access \texttt{alpha}\texttt{\_dev}\texttt{\_instructions.txt}.
+Pretend that there is also a developer in the company named Bob who is a developer for projects \texttt{beta} and \texttt{charlie}. Bob would
+have the security level \texttt{developer} which is a proper label to be able to access \texttt{alpha}\texttt{\_dev}\texttt{\_instructions.txt}, but Bob would not
+be given the label \texttt{alpha} so therefore would ultimately not have access to \texttt{alpha}\texttt{\_dev}\texttt{\_instructions.txt}.
+
+The newly proposed security policy of levels and labels 
+would allow multiple groupings of users such as, in our example, 
+more \texttt{developer}s who have access to project \texttt{alpha}, more \texttt{administrator}s that have access to multiple projects,
+and files that are available to all staff members. With the newly proposed security policy, a system administrator would therefore be able 
+to flexibly compartmentalize all the files and data that users would have 
+access to on a system. Ideally, the tool suite would be developed as a standalone 
+Linux Security Module so as to be tailored to but not mutually 
+exclusive for SimpleFlow. The development of the custom kernel that would allow the tool suite to be standalone
+was left to future work.
+\clearpage
+
+\subsection{Motivation}
+\par 
+\vspace{\baselineskip}
+\hspace{1em}
+In 2022, the author reached out to his advisor, Dr. W. Michael 
+Petullo showing interest in the SimpleFlow project and learning more about 
+its shortcomings including the binary security policy currently in 
+place. Having pursued an emphasis in cybersecurity alongside his 
+degree, the author had already had an introduction to Linux security 
+but wanted to learn more. The motivation of PAMEx was to aid in and 
+further enhance the development of the SimpleFlow project as well as 
+to learn more about Linux security at a system level and how it can 
+be added to and manipulated. Building a security policy tool system 
+from the ground up would give a foundational experience of 
+that aspect of security systems. 
+
+Together with his advisor, the author devised and proposed an 
+alternative solution for the SimpleFlow security policy than the 
+one currently in place. This policy would continue to work on top 
+of the LSM interface as SimpleFlow already does and therefore be 
+integrated into SimpleFlow easily. The policy’s syntax and 
+tools would be user friendly and allow for much greater malleability 
+while having a small footprint. Another requirement was to ensure 
+that PAMEx's integration would not need to be exclusive 
+to SimpleFlow but could be used on many Linux based systems. Developing 
+a project of this scale is also a perfect opportunity to research, learn about, and practice the development cycle of 
+a project with industry standards.  
+

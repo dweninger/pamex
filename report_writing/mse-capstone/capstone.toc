@@ -1,23 +1,23 @@
-\contentsline {section}{Abstract}{i}{section*.1}%
-\contentsline {section}{Acknowledgments}{ii}{section*.2}%
-\contentsline {section}{List of Tables}{iv}{section*.4}%
-\contentsline {section}{List of Figures}{v}{section*.5}%
-\contentsline {section}{Glossary}{vi}{section*.6}%
-\contentsline {section}{\numberline {1.}Introduction}{1}{section.0.1}%
-\contentsline {subsection}{\numberline {1.1.}Overview}{1}{subsection.0.1.1}%
-\contentsline {subsection}{\numberline {1.2.}Point 1}{1}{subsection.0.1.2}%
-\contentsline {subsection}{\numberline {1.3.}Point 2}{1}{subsection.0.1.3}%
-\contentsline {section}{\numberline {2.}Requirements}{2}{section.0.2}%
-\contentsline {subsection}{\numberline {2.1.}Overview}{2}{subsection.0.2.1}%
-\contentsline {subsection}{\numberline {2.2.}Point 1}{2}{subsection.0.2.2}%
-\contentsline {subsection}{\numberline {2.3.}Point 2}{2}{subsection.0.2.3}%
-\contentsline {section}{\numberline {3.}Design and Implementation}{3}{section.0.3}%
-\contentsline {subsection}{\numberline {3.1.}Overview}{3}{subsection.0.3.1}%
-\contentsline {subsection}{\numberline {3.2.}Point 1}{3}{subsection.0.3.2}%
-\contentsline {subsection}{\numberline {3.3.}Point 2}{3}{subsection.0.3.3}%
-\contentsline {section}{Section01}{4}{section*.13}%
-\contentsline {subsection}{\numberline {3.4.}Overview}{4}{subsection.0.3.4}%
-\contentsline {subsection}{\numberline {3.5.}Point 1}{4}{subsection.0.3.5}%
-\contentsline {subsection}{\numberline {3.6.}Point 2}{4}{subsection.0.3.6}%
-\contentsline {section}{\numberline {4.}Bibliography}{5}{section.0.4}%
-\contentsline {section}{\numberline {5.}Appendices}{6}{section.0.5}%
+\contentsline {section}{Abstract}{i}{}%
+\contentsline {section}{Acknowledgments}{ii}{}%
+\contentsline {section}{List of Figures}{iv}{}%
+\contentsline {section}{Glossary}{v}{}%
+\contentsline {section}{\numberline {1.}Introduction}{1}{}%
+\contentsline {subsection}{\numberline {1.1.}Background}{1}{}%
+\contentsline {subsection}{\numberline {1.2.}Motivation}{4}{}%
+\contentsline {section}{\numberline {2.}Design}{5}{}%
+\contentsline {subsection}{\numberline {2.1.}Development Process}{5}{}%
+\contentsline {subsection}{\numberline {2.2.}Technologies}{8}{}%
+\contentsline {subsection}{\numberline {2.3.}PAMEx Design Overview}{9}{}%
+\contentsline {section}{\numberline {3.}Design and Implementation of Tools}{12}{}%
+\contentsline {subsection}{\numberline {3.1.}PAMEx Compiler Design and Implementation}{12}{}%
+\contentsline {subsection}{\numberline {3.2.}PAMEx Language File Design}{14}{}%
+\contentsline {subsection}{\numberline {3.3.}The PAMEx Compiler Outputs Two Files: The Assignments File and a Level Database}{17}{}%
+\contentsline {subsection}{\numberline {3.4.}Design and Implementation of The File Labeler and User Database Builder (FLUDB) Tool}{19}{}%
+\contentsline {subsection}{\numberline {3.5.}Design and Implementation of PAMEx's Pluggable Authentication Module (PAM)}{21}{}%
+\contentsline {subsection}{\numberline {3.6.}Design and Implementation of the Extraneous File Labeler Tool}{25}{}%
+\contentsline {subsection}{\numberline {3.7.}Design and Implementation of the Oracle Tool}{26}{}%
+\contentsline {section}{\numberline {4.}Testing}{28}{}%
+\contentsline {section}{\numberline {5.}Future Work}{30}{}%
+\contentsline {section}{\numberline {6.}Conclusion}{31}{}%
+\contentsline {section}{Bibliography}{32}{}%

@@ -1,0 +1,121 @@
+\section{Testing}
+\label{sec:Testing}
+
+\par 
+\vspace{\baselineskip}
+\hspace{1em}
+Test cases were created alongside the development of PAMEx to follow 
+the Agile development model and Scrum framework. For each sprint, an 
+iterative completed product was to be made and therefore, that 
+iterative product was tested during each sprint and specifically how 
+the new iteration worked with the project as a whole \cite{lacey2015}. Unit tests were 
+performed to ensure that for each function in each 
+iteration, PAMEx performed how it was supposed to. These unit tests were performed manually by testing several input values for each 
+parameter and by making sure to practice branch coverage by testing every 
+conditional outcome. Boundary testing was also practiced during unit 
+testing and therefore, edge cases were specifically paid attention to. It was 
+ensured that PAMEx handled errors in the way that it was supposed to 
+and even exited gracefully when need be \cite{jorgensen2021}.  
+
+One of the major decisions made while error handling was deciding for 
+each input scenario that would result in an error, should the program 
+exit gracefully or ignore the input and continue. In many cases when an 
+error occurred in the program, the state was unsalvageable and 
+therefore would be required to exit gracefully. This was especially 
+true with the PAMEx compiler. However, in some cases, such as when the 
+FLUDB reads in an assignment for an entity that does not exist on the 
+system such as a missing file, the program would simply print out a 
+statement saying that the action could not be performed, ignore the 
+action, and move on. 
+
+Integration testing was also performed on each PAMEx program which 
+focused more on the end-to-end process of the code rather than the 
+individual parts \cite{jorgensen2021}. For example, the PAMEx compiler focused on 
+integration testing by creating 12 end-to-end test files. Each test 
+file focuses on testing a particular aspect of the PAMEx language and 
+each file builds from the last. The idea is that as a new aspect of 
+the PAMEx language is introduced in a new test file, if the test fails, 
+the developer will know which aspect of the language is causing the 
+issue. Therefore, it would be easy to pinpoint how and where 
+the error occurred. Finally, a C script was developed to test 
+all the compiler test files in succession.  
+
+After performing unit tests in a similar manner to the PAMEx compiler, 
+other tools had integration testing performed manually. The FLUDB tool 
+was tested by creating several different policy-out files from the 
+PAMEx compiler and inputting them into the tool. Once
+most bugs were found using unit and integration testing and the FLUDB tool 
+was in a production-level state, the policy-out files were modified to a state that the FLUDB tool was not designed to interpret to 
+test its error handling.  
+
+The PAMEx PAM module was trickier to test than the other tools because 
+it is not a standalone C program. The PAM module is instead invoked 
+whenever a user logs in to a system. As stated in Section 3.5 
+however, if the PAM module fails during the login process, it is 
+likely that the entire authentication process fails whenever a user 
+attempts to authenticate on the system in the future. The lack of being able to 
+authenticate on a system is a major problem. Not only can no user 
+log into the system anymore, but users also cannot authenticate when 
+trying to perform a process as root to fix the authentication failure. Several tools were used to 
+combat this issue. First, the PAM C 
+libraries \texttt{security/pam\_appl.h} and \texttt{security/pam\_misc.h} were used to create a standalone C program that performed similar 
+actions to a PAM module. The C program acted like a PAM 
+simulation with built in functions like \texttt{pam\_start} to begin the PAM 
+process, \texttt{pam\_authenticate} to simulate a user being authenticated, and 
+\texttt{pam\_end} to end the process \cite{man7pam}. Making use of these PAM libraries gave insight as to how the real PAM module should be written. With 
+this insight, and by perfecting the simulation, fewer bugs were likely to be created when developing the real PAM module.  
+
+Whenever testing or demonstrating the use of the PAM module, a virtual machine was used. The virtual machine has built-in 
+functionality to snapshot a state of the machine and then reload the 
+state later if necessary. Making use of this feature, a snapshot of the virtual machine was created every time a change was made 
+to the PAM module but before the PAM module was fully implemented onto 
+the virtual machine. This ensured that, should the PAM module break the 
+virtual machine, there would be a safe state to load back to.  
+
+During the testing of the PAM module, 
+Fedora’s pamtester package was also utilized. The pamtester process allows a user to 
+specify a particular grouping of PAM modules that they wish to test 
+with the following command.  
+
+\begin{verbatim}
+pamtester <service-name> <username> <module-name> [<flags>] 
+\end{verbatim}
+
+In the case of the PAMEx PAM module, the pamtester command might look 
+like the following line. 
+
+\begin{verbatim}
+pamtester system-auth Alice authenticate
+\end{verbatim}
+
+The test command above reads: invoke the pamtester on the \texttt{system-auth} 
+file in the directory \texttt{/etc/pam.d} which contains a list of PAM modules 
+to invoke in succession. Invoke the modules with the user Alice, but 
+only run the PAM modules with the authentication label. The pamtester 
+would then simulate all the authentication PAM modules mentioned in the 
+\texttt{system- auth} file running in succession with the system user Alice being 
+authenticated. Using the pamtester in this way 
+directly tested the PAMEx PAM module without performing a real 
+authentication process on the system and therefore, should an error 
+occur, the authentication system would not break \cite{man7pam}. The pamtester was 
+used extensively for integration testing. Once satisfied 
+that the PAM module was working as expected, it was then tested by 
+performing actual user authentication on the system including the \texttt{su} 
+command, using the \texttt{sudo} command to authenticate as root, and 
+graphically logging in to the system. The PAM module requires two 
+parameters which specify the location of the user database file and 
+the output of the PAM module and were therefore tested with several 
+correct and incorrect values as well as no values at all to ensure that 
+errors were handled appropriately. 
+
+Oracle was created as a user prompt tool and therefore extensive 
+integration and boundary testing was done to ensure that all user input 
+was handled properly. For instance, the first value that Oracle prompts 
+for is the pseudo-proc ID. If a user inputs any ID that is not found in 
+the system, Oracle says that the ID cannot be found and asks the user 
+to try again. A similar process is done when Oracle prompts the user 
+for a command and when it prompts the user for a file. For each prompt, 
+several integration and boundary tests were manually performed
+until Oracle was working as expected and was in a 
+production-level state. 
+
