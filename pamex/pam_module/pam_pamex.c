@@ -28,7 +28,7 @@ char * get_user_from_db(char * username, FILE * targeted_users_db_file);
  * 	and writes to file
  * cpid - the process ID
  * file_path - the path to pseudo_proc directory
- * user_info - the pamx information from the userdb
+ * user_info - the PAMEx information from the userdb
 */
 void create_proc_file(int cpid, char * file_path, char * user_info) {
 	strcat(file_path, "/pseudo_proc");
@@ -81,7 +81,7 @@ char * get_user_from_db(char * username, FILE * targeted_users_db_file) {
 }
 /**
  * pam_sm_authenticate - executes on PAM auth keyword such as in system-auth. Creates
- * 	a pseudo-proc file which contains signed in user's Pamx classification information
+ * 	a pseudo-proc file which contains signed in user's PAMEx classification information
 */
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	char *username = NULL;

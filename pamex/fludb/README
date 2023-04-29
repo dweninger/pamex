@@ -1,13 +1,13 @@
-README file for policy-interpreter.c
+README file for fludb.c
 
 Overview:
-The policy interpreter is a tool used to interpret a policy file and a user definition file to create a targeted user database and extended attributes for files.
+The FLUDB is a tool used to interpret a policy file and a user assignment file to create a targeted user database and extended attributes for files.
 
 Usage:
-The policy interpreter tool takes in two parameters, the path to the policy file and the directory of the files being targeted. The policy file contains the rules for assigning levels and labels to files and users. The tool reads the policy file line by line and performs the specified operations on the target files and users.
+The FLUDB tool takes in two parameters, the path to the policy file and the directory of the files being targeted. The policy file contains the rules for assigning levels and labels to files and users. The tool reads the policy file line by line and performs the specified operations on the target files and users.
 
 How it works:
-The policy interpreter tool reads the policy file line by line and separates the line data into variables based on the space delimiter. It then checks which operation to perform based on the line prefix. If the prefix is "FILE_LEVEL" or "FILE_LABELS", the tool assigns a level or label to the specified file. If the prefix is "USER_LEVEL" or "USER_LABELS", the tool writes the user's level or label to the user database.
+The FLUDB tool reads the policy file line by line and separates the line data into variables based on the space delimiter. It then checks which operation to perform based on the line prefix. If the prefix is "FILE_LEVEL" or "FILE_LABELS", the tool assigns a level or label to the specified file. If the prefix is "USER_LEVEL" or "USER_LABELS", the tool writes the user's level or label to the user database.
 
 To assign a level or label to a file, the tool first creates the file path from the path to the directory and the file name. It then checks if the file exists and if it does, sets the appropriate extended attribute to the file.
 
@@ -17,7 +17,8 @@ Author:
 Daniel Weninger
 
 Last Modified:
-2/18/2023
+4/29/2023
 
 
 getfattr -d -m ".*" <filename>
+used to get the extended attributes of a file

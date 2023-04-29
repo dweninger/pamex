@@ -1,0 +1,21 @@
+The Oracle tool for PAMEx is a program written in C that simulates how a custom kernel would cross-reference the logged-in user's credentials via the proc directory and the extended attributes to ensure that a user is allowed to access the file.
+
+To use the tool, the user needs to enter the PID (name of the directory that the attr/current file is in) of the user they want to check for access. Then, the user can enter a command to perform a specific action. The available commands are:
+
+    help: prints a list of available commands
+    user: checks the name of the signed-in user
+    userinfo: gets the name and authentication information of the signed-in user
+    checkfileaccess (or cfa): checks if the currently signed-in user can access a file
+    fileinfo: gets the authentication information of a file
+    quit: quits the Oracle tool
+
+The tool also requires two command-line arguments:
+
+    dir_containing_pseudo_proc: the directory containing the pseudo proc directory that simulates the kernel proc directory
+    path_to_level_db: the path to the level database that contains the security levels and labels of files and users
+
+If any of the command-line arguments are missing, the program will exit and print a usage message.
+
+The tool will prompt the user for input and guide the user through the process of performing the desired action. If the user input is invalid or if any errors occur during execution, an error message will be printed to stderr.
+
+The Oracle tool for PAMEx was written by Daniel Weninger and was last modified on 4/29/2023.

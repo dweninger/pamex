@@ -1,5 +1,5 @@
 /**
- * This is the fludb tool for Pamx
+ * This is the fludb tool for PAMEx
  * This tool is used to interpret the file and user assignment file 
  * 	and create the targeted users database and file's extended attributes
  * Author: Daniel Weninger

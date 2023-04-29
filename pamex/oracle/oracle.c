@@ -1,5 +1,5 @@
 /**
- * This is the Oracle tool for Pamx
+ * This is the Oracle tool for PAMEx
  * The job of this tool is to simulate how a custom kernel would cross reference
  *  the logged in user's credentials via the proc directory and the exteneded
  *  attributes to ensure that a user is allowed to access the file. The Oracle
@@ -33,7 +33,7 @@ int main (int argc, char ** argv) {
     }
     fclose(level_db);
 
-    printf("Welcome to the Pamx Oracle!\n");
+    printf("Welcome to the PAMEx Oracle!\n");
 
     // Prompt user for PID
     // This is the name of the dir that the attr/current file is in
@@ -72,7 +72,7 @@ int main (int argc, char ** argv) {
         
         if(strcasecmp(user_command, "help") == 0) {
             // help
-            printf("Pamx Oracle Commands:\n"
+            printf("PAMEx Oracle Commands:\n"
             "help - print list of commands\n"
             "user - check the name of the signed in user\n"
             "userinfo - get the name and authentication information of signed in user\n"
@@ -198,6 +198,7 @@ int main (int argc, char ** argv) {
 /**
  * getUserLevel - get the hierarchical level of the user from the pseudo proc file
  * targetedUsersDBFile - the filepointer of the targeted users DB 
+ * returns  - 1 if user level found and 0 if not
  */
 int get_user_level(char * proc_file_path, char * level_db_path) {
 	char * line = NULL;
@@ -207,12 +208,12 @@ int get_user_level(char * proc_file_path, char * level_db_path) {
     int placement = -1;
     FILE * proc_file = fopen(proc_file_path, "r");
     FILE * level_db_file = fopen(level_db_path, "r");
-
+    // Read through the pseudo proc info to find the user level
 	read = getline(&line, &len, proc_file);
     char * token = strtok(strdup(line), ":");
     token = strtok(NULL, ":");
     strcpy(level_name, token);
-
+    // Get the level's placement from the level database
     while ((read = getline(&line, &len, level_db_file)) != -1) {
         char * level_token = strtok(strdup(line), ":");
         if(strcmp(level_name, level_token) == 0) {
@@ -220,7 +221,7 @@ int get_user_level(char * proc_file_path, char * level_db_path) {
             placement = atoi(level_token);
         }
     }
-
+    // Level not found in the level database
     if(placement == -1) {
         fprintf(stderr, "Could not find user's level %s in the level DB\n", level_name);
         exit(EXIT_FAILURE);
@@ -231,6 +232,12 @@ int get_user_level(char * proc_file_path, char * level_db_path) {
 	return placement;
 }
 
+/**
+ * get_user_labels - Given a path to a file in the proc directory, returns an array of the user's labels.
+ * 
+ * proc_file_path - the path to the file in the proc directory
+ * returns  - an array of the user's labels
+ */
 char ** get_user_labels(char * proc_file_path) {
 	char * line = NULL;
     size_t len = 0;
@@ -256,6 +263,15 @@ char ** get_user_labels(char * proc_file_path) {
     return label_list;
 }
 
+
+/**
+ * get_file_level - Given a path to a file and a path to the level database, returns the file's
+ * clearance level as an integer.
+ * 
+ * file_path - the path to the file
+ * level_db_path - the path to the level database
+ * returns  - the file's clearance level as an integer
+ */
 int get_file_level(char * targeted_file_path, char * level_db_path) {
     char * line = NULL;
     size_t len = 0;
@@ -272,8 +288,10 @@ int get_file_level(char * targeted_file_path, char * level_db_path) {
 	char * token = strtok(xattr, ":");
     strcpy(level_name, token);
     FILE * level_db_file = fopen(level_db_path, "r");
+    // Find the level in the level database
     while ((read = getline(&line, &len, level_db_file)) != -1) {
         char * level_token = strtok(strdup(line), ":");
+        // When the level is found, extract its placement
         if(strcmp(level_name, level_token) == 0) {
             level_token = strtok(NULL, ":");
             placement = atoi(level_token);
@@ -289,6 +307,12 @@ int get_file_level(char * targeted_file_path, char * level_db_path) {
 	return placement;
 }
 
+/**
+ * get_file_labels - Given a path to a file, returns an array of the file's labels.
+ * 
+ * file_path - the path to the file
+ * returns  - an array of the file's labels
+ */
 char ** get_file_labels(char * targeted_file_path) {
 	char * xattr = malloc(500);
 	char ** label_list = (char**)malloc(sizeof(char*));
@@ -313,11 +337,17 @@ char ** get_file_labels(char * targeted_file_path) {
 	}
 	return label_list;
 }
-
+ /**
+  * contains_labels - Given two lists of labels, check if list b is contained in list a
+  * ref_labels - the labels to check if the user has
+  * user_labels - the labels assigned to the user
+  * returns  - 1 if user has all of the labels in ref_labels or 0 otherwise
+ */
 int contains_labels(char ** ref_labels, char ** user_labels) {
 	int ref_i = 0;
 	int user_i = 0;
 	int found_match = 0;
+    // Check that for each ref label, there is a user label that has the same name
 	while(ref_labels && ref_labels[ref_i] && strcmp(ref_labels[ref_i], "") != 0) { 
 		user_i = 0;
 		while(user_labels && user_labels[user_i] && strcmp(user_labels[user_i], "") != 0) {
@@ -328,11 +358,13 @@ int contains_labels(char ** ref_labels, char ** user_labels) {
 			}			
 			user_i++;	
 		}
+        // User does not have a label that it needs
 		if(!found_match) {
 			return 0;
 		}
 		found_match = 0;
 		ref_i++;
 	}
+    // User has all of the needed labels
 	return 1;
 }

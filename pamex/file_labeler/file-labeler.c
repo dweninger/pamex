@@ -1,7 +1,7 @@
 /**
- * This is the file labeler tool for Pamx
+ * This is the file labeler tool for PAMEx
  * The job of this tool is to allow a privileged user to change a file's
- *  Pamx levels and labels via their extended attributes easily
+ *  PAMEx levels and labels via their extended attributes easily
  * 
  * Author: Daniel Weninger
  * Last Modified: 4/29/2023

@@ -8,19 +8,19 @@ Installation Instructions:
 =============================
 1) Make sure that the pam-devel package is installed on the system
 2) To compile, run 
-	gcc -fPIC -Wall -Werror -c pam_pamx.c
+	gcc -fPIC -Wall -Werror -c pam_pamex.c
 3) To create the shared object file from the object file run 
-	gc -shared -o pam_pamx.so pam_pamx.o
+	gc -shared -o pam_pamex.so pam_pamex.o
 4) You must copy the shared object file to the folder /lib64/security where all
 	of the other shared object files live. To do this, run the command
-	sudo cp pam_pamx.so /lib64/security
+	sudo cp pam_pamex.so /lib64/security
 5) Edit the file located at /etc/pam.d/system-auth (you might need root privileges)
 	and add the line
-	auth required pam_pamx.so <path_to_users_db> <path_to_output_dir>
+	auth required pam_pamex.so <path_to_users_db> <path_to_output_dir>
 	above all of the other pam module implementations (to the top of the file)
 6) Edit the file located at /etc/pam.d/password-auth (you might need root privileges)
 	and add the line
-	auth required pam_pamx.so <path_to_users_db> <path_to_output_dir>
+	auth required pam_pamex.so <path_to_users_db> <path_to_output_dir>
 	above all of the other pam module implementations (to the top of the file)
 7) You can test with the command 
 	eudo pamtester system-auth <user> authenticate
