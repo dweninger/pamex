@@ -1,2 +1,0 @@
-secret1
-secret2

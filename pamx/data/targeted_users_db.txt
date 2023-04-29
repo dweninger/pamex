@@ -1,2 +1,0 @@
-adam:top-secret:3:additional
-daniel:confidential:1:extra-access

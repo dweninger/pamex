@@ -1,3 +1,0 @@
-level confidential (set restricted);
-level top_secret (> confidential);
-level secret (< confidential);
