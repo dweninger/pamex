@@ -27,7 +27,7 @@ int main(int ac, char ** av) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Starting policy interpreter tool...\n");
+	printf("Starting FLUDB tool...\n");
 
 	// Initiate global variables
 	file_paths_size = 0;
@@ -88,7 +88,7 @@ int main(int ac, char ** av) {
 		}
 	}
 	fclose(file_in);	
-	printf("Policy interpreter tool done!\n");
+	printf("FLUDB tool done!\n");
 }
 
 /**

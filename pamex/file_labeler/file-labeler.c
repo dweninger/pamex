@@ -229,6 +229,7 @@ char ** get_file_labels_except(char * targeted_file_path, char * label_name) {
             token = strtok(NULL, ":");
             index++;
         }
+        token = strtok(NULL, ":");
 	}
 	return label_list;
 }
