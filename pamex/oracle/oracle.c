@@ -352,7 +352,9 @@ int contains_labels(char ** ref_labels, char ** user_labels) {
 	while(ref_labels && ref_labels[ref_i] && strcmp(ref_labels[ref_i], "") != 0) {
         found_match = 0; 
 		user_i = 0;
+        printf("ref_label: %s\n",ref_labels[ref_i]);
 		while(user_labels && user_labels[user_i] && strcmp(user_labels[user_i], "") != 0) {
+            printf("user_label: %s\n", user_labels[user_i]);
             user_labels[user_i][strcspn(user_labels[user_i], "\n")] = 0;
 			if(strcmp(ref_labels[ref_i], user_labels[user_i]) == 0) {
 				found_match = 1;
