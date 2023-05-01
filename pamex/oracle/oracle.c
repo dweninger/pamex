@@ -321,6 +321,7 @@ char ** get_file_labels(char * targeted_file_path) {
 	int index = 0;
 	printf("xattr: %s\n", xattr);
     strcat(xattr, ":\0");
+    printf("xattr: %s\n", xattr);
 	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			return NULL;
@@ -331,8 +332,9 @@ char ** get_file_labels(char * targeted_file_path) {
 	}
 	
 	char * token = strtok(xattr, ":");
+    printf("token: %s\n", token);
 	while(token) {
-        printf("token: %s\n", token);
+        
 		label_list = (char **)realloc(label_list, (index +1) * sizeof(char*));
 		label_list[index] = strdup(token);
 		token = strtok(NULL, ":");
