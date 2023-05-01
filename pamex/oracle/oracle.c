@@ -340,6 +340,7 @@ char ** get_file_labels(char * targeted_file_path) {
 		token = strtok(NULL, ":");
 		index++;
 	}
+    label_list[index] = "\0";
 	return label_list;
 }
  /**
