@@ -45,6 +45,7 @@ void create_proc_file(int cpid, char * file_path, char * user_info) {
 	FILE * procFP = fopen(file_path, "w");
 	fprintf(procFP, "%s", user_info);
 	fclose(procFP);
+	free(temp_file);
 }
 
 /**
@@ -85,9 +86,15 @@ char * get_user_from_db(char * username, FILE * targeted_users_db_file) {
 */
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	char *username = NULL;
+	const char *service = NULL;
 	int cpid = getpid();
-	char * file_path = malloc(200 * sizeof(char));
+	char file_path[500];
 	
+	pam_get_item(pamh, PAM_SERVICE, (const void **)&service);
+	
+	if (strcmp(service, "sudo") == 0) {
+        return PAM_IGNORE;
+    }
 	// Get the username
 	if (pam_get_user(pamh, (const char **)&username, NULL) != PAM_SUCCESS || username == NULL) {
 		fprintf(stderr, "Cannot find username %s\n", username);
@@ -119,9 +126,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 		user_info = strdup(user_info_temp);
 	}
 	
-	file_path = strdup(argv[1]);
+	strcpy(file_path, argv[1]);
 	printf("create proc\n");
 	create_proc_file(cpid, file_path, user_info);
+	free(user_info);
 	return PAM_SUCCESS;
 }
 
