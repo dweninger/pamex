@@ -320,6 +320,7 @@ char ** get_file_labels(char * targeted_file_path) {
 	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
 	printf("xattr: %s\n", xattr);
+    strcat(xattr, ":");
 	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			return NULL;
