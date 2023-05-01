@@ -319,7 +319,7 @@ char ** get_file_labels(char * targeted_file_path) {
     xattr[xattr_size] = '\0'; // manually null-terminate the buffer
 	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
-	
+	printf("xattr: %s\n", xattr);
 	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			return NULL;
