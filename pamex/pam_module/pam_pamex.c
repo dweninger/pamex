@@ -31,12 +31,12 @@ char * get_user_from_db(char * username, FILE * targeted_users_db_file);
  * user_info - the PAMEx information from the userdb
 */
 void create_proc_file(int cpid, char * file_path, char * user_info) {
-	strcat(file_path, "/pseudo_proc");
-        makedir(file_path);
-	char * temp_file = malloc(sizeof(char) * 200);
-	sprintf(temp_file, "%s/%d", file_path, cpid);
-	sprintf(file_path, "%s", temp_file);
-	makedir(file_path);
+	char *temp_file = malloc(sizeof(char) * 200);
+    strcat(temp_file, file_path);
+	strcat(temp_file, "/pseudo_proc");
+    makedir(temp_file);
+	sprintf(file_path, "%s/%d", temp_file, cpid);
+    makedir(file_path);
 	sprintf(temp_file, "%s/attr", file_path);
 	sprintf(file_path, "%s", temp_file);
 	makedir(file_path);
@@ -116,7 +116,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 	}
 	
 	file_path = strdup(argv[1]);
-	
+	printf("before create proc\n");
 	create_proc_file(cpid, file_path, user_info);
 	return PAM_SUCCESS;
 }
