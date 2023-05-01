@@ -10,7 +10,7 @@ Installation Instructions:
 2) To compile, run 
 	gcc -fPIC -Wall -Werror -c pam_pamex.c
 3) To create the shared object file from the object file run 
-	gc -shared -o pam_pamex.so pam_pamex.o
+	gcc -shared -o pam_pamex.so pam_pamex.o
 4) You must copy the shared object file to the folder /lib64/security where all
 	of the other shared object files live. To do this, run the command
 	sudo cp pam_pamex.so /lib64/security
