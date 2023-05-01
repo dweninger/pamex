@@ -319,9 +319,7 @@ char ** get_file_labels(char * targeted_file_path) {
     xattr[xattr_size] = '\0'; // manually null-terminate the buffer
 	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
-	printf("xattr: %s\n", xattr);
     strcat(xattr, ":\0");
-    printf("xattr: %s\n", xattr);
 	if(xattr_size == -1) {
 		if(errno == ENODATA) {
 			return NULL;
@@ -332,7 +330,6 @@ char ** get_file_labels(char * targeted_file_path) {
 	}
 	
 	char * token = strtok(xattr, ":");
-    printf("token: %s\n", token);
 	while(token) {
         
 		label_list = (char **)realloc(label_list, (index +1) * sizeof(char*));
@@ -357,9 +354,7 @@ int contains_labels(char ** ref_labels, char ** user_labels) {
 	while(ref_labels && ref_labels[ref_i] && strcmp(ref_labels[ref_i], "") != 0) {
         found_match = 0; 
 		user_i = 0;
-        printf("ref_label: %s\n",ref_labels[ref_i]);
 		while(user_labels && user_labels[user_i] && strcmp(user_labels[user_i], "") != 0) {
-            printf("user_label: %s\n", user_labels[user_i]);
             user_labels[user_i][strcspn(user_labels[user_i], "\n")] = 0;
 			if(strcmp(ref_labels[ref_i], user_labels[user_i]) == 0) {
 				found_match = 1;
