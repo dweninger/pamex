@@ -91,7 +91,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 	char file_path[500];
 	
 	pam_get_item(pamh, PAM_SERVICE, (const void **)&service);
-	
+
 	if (strcmp(service, "sudo") == 0) {
         return PAM_IGNORE;
     }
@@ -100,7 +100,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 		fprintf(stderr, "Cannot find username %s\n", username);
 		return PAM_IGNORE;
 	}
-	printf("check args\n");
 	// check args are valid
 	if(argc != 2) {
 		printf("usage: <path_to_users_db> <dest_dir>");
@@ -109,7 +108,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 	// find targeted user db file and create file pointer
 	char * targeted_users_db_path = strdup(argv[0]);
 	FILE * targeted_users_db_file = fopen(targeted_users_db_path, "r");
-	printf("get targeted users db\n");
 	if(!targeted_users_db_file) {
 		fprintf(stderr, "No targeted users DB file at %s\n", targeted_users_db_path);
 		return PAM_IGNORE;
@@ -117,7 +115,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 	// get the user information of the current signed in user from the db
 	char * user_info = strdup(get_user_from_db(username, targeted_users_db_file));
 	fclose(targeted_users_db_file);
-	printf("get user info\n");
 	if(user_info == NULL) {
 		// If the user is not found in the user DB
 		// give them level unrestricted
@@ -127,7 +124,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
 	}
 	
 	strcpy(file_path, argv[1]);
-	printf("create proc\n");
 	create_proc_file(cpid, file_path, user_info);
 	free(user_info);
 	return PAM_SUCCESS;
