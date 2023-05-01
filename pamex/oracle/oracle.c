@@ -314,13 +314,11 @@ int get_file_level(char * targeted_file_path, char * level_db_path) {
  * returns  - an array of the file's labels
  */
 char ** get_file_labels(char * targeted_file_path) {
-	char * xattr = malloc(500);
-    char label_xattr[501]; // allocate an extra byte for the null-terminator
+    char xattr[501]; // allocate an extra byte for the null-terminator
     int xattr_size = getxattr(targeted_file_path, "security.pamex.labels", xattr, 500);
-    label_xattr[xattr_size] = '\0'; // manually null-terminate the buffer
+    xattr[xattr_size] = '\0'; // manually null-terminate the buffer
 	char ** label_list = (char**)malloc(sizeof(char*));
 	int index = 0;
-
 	
 	if(xattr_size == -1) {
 		if(errno == ENODATA) {
