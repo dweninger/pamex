@@ -1,0 +1,39 @@
+On system/user login, the PAM module will be invoked by the login process which will write to the /proc file,
+giving the kernel the user clearance information including the 
+levels and compartments.
+That user information is a part of the kernel's data structure and therefore can be
+accessed whenever a program is forked as a result. 
+Whenever the kernel forks to access a a file, the kernel will cross reference
+extended attributes with the /proc file by the and checked to make sure that 
+the user's clearance level and compartments allow access.
+The PAM module itself is responsible for writing the user information to the
+/proc file on login.
+
+Task & Purpose
+
+ACTIVE VOICE
+
+Fielding on Architecture/Design Model
+
+Simple Linux File Classifier
+
+Linux File Hierarchy Tool
+
+SimpleClass
+
+Pamex
+
+class xattr pam
+
+Simple Pamxattr
+
+Pam X EA
+
+-----------------------------------
+
+1) boot computer
+2) press "e" at the grub menu
+3) find the line that starts with "linux" and add init=/bin/sh
+4) press ctl+x to boot
+5) will get a prompt, type "mount -o remount /"
+6) go into directory and restore backup copy

@@ -586,7 +586,7 @@ auth    required                             pam_deny.so
 Figure~\ref{PAM Diagram} depicts how PAM modules are invoked on a system with PAMEx via various authentication processes.
 When a system user authentication process occurs, the corresponding PAM configuration files are invoked where various PAM
 modules are performed in succession.
-\clearpage
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=.9\textwidth]{section04/assets/pam_overview.png}
@@ -688,7 +688,7 @@ security.selinux="unconfined_u:object_r:user_tmp_t:s0"
 \par 
 \vspace{\baselineskip}
 \hspace{1em}
-A Linux kernel can load Linux security  modules to affect how the kernel imposes its access controls.
+A Linux kernel can enforce Linux security modules to affect how the kernel imposes its access controls.
 For a Linux security module, the kernel is written in such a way that 
 allows for the module to perform its actions because of specific 
 commands running \cite{kerneldocs}. PAMEx does not yet provide a Linux security module. 

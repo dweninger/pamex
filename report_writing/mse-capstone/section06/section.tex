@@ -10,18 +10,22 @@ enforces. PAMEx gives the privileged user the opportunity to create
 full hierarchical security policies on a system complete with both 
 levels and labels. Although PAMEx is presented from end-to-end as a 
 working security tool suite, the lack of a custom-built kernel prevents 
-it from behaving as a fully-fledged security module. Therefore, the 
-tool suite as it stands was not and is not able to be incorporated 
-directly into the SimpleFlow project as an automatically enforced 
-security policy module. Using the Oracle tool to simulate the security 
+it from behaving as a fully-fledged security module. Therefore, 
+the relationship between PAMEx and SimpleFlow as it stands is as follows:
+SimpleFlow is a customized kernel and network filter, tailored to monitor the actions of malicious
+users with a binary security policy of marking files as either confidential
+or non-confidential. PAMEx is a linux security tool suite that allows a privileged
+user to define a more flexible security policy. However, PAMEx does not have a
+kernel that is customized for it and therefore cannot be automatically enforced on
+a system as it stands. For PAMEx to work with SimpleFlow, SimpleFlow’s custom kernel will
+need to be tailored to allow PAMEx security policies to be enforced.
+In doing so, a privileged administrative user will be able to further define through PAMEx how users on a SimpleFlow system
+will be marked as performing illicit activity and allow SimpleFlow to monitor their actions
+and filter their exfiltration attempts. 
+Using the Oracle tool to simulate the security 
 policies created by PAMEx is an excellent way to show PAMEx working 
 from end to end but does not allow PAMEx to be used in a fully-fledged 
-production setting like SimpleFlow for which it was designed. In the 
-future, for the PAMEx project to be incorporated into SimpleFlow or as 
-a standalone Linux security policy in general, the project will need 
-to have a custom kernel developed for it. With the development of a 
-custom kernel, PAMEx would be able to perform several tasks that 
-it currently is not able to as described in Section 3.7. 
+production setting like SimpleFlow for which it was designed.
 
 The file labeler tool was developed to provide the ability to quickly 
 change, set, or remove the PAMEx security information from a file. In 
@@ -37,8 +41,4 @@ they find the need to modify the security information of system users.
 The need for PAMEx to be incorporated into and working 
 alongside SimpleFlow still stands. Porting PAMEx into SimpleFlow is a 
 significant undertaking and one that would need to be done only after a 
-custom kernel has been developed for PAMEx. Even though SimpleFlow was 
-also developed in C, PAMEx was developed 
-outside of SimpleFlow. Therefore, future work will need to be done to 
-ensure that PAMEx works how it is supposed to in conjunction with 
-SimpleFlow. 
+custom kernel has been tailored for PAMEx.

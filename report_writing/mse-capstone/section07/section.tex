@@ -3,14 +3,20 @@
 \par 
 \vspace{\baselineskip}
 \hspace{1em}
-The PAMEx security compiler and tool suite designed to enhance the 
+The PAMEx security compiler and tool suite, designed to enhance the 
 SimpleFlow security policy from being a binary system to being a 
-flexible security system has achieved an end-to-end proof of concept. 
+flexible security system, has achieved an end-to-end proof of concept. 
 Being inspired by the US security classification system \cite{natsecinfo}, PAMEx can 
 define both hierarchical levels and non-hierarchical labels while 
 having a small footprint on a system of less than 1,700 lines 
-of code. The system was developed and integrated as several lightweight 
-tools. Therefore, the integration of PAMEx onto SimpleFlow or any 
+of code. Although PAMEx was tailored to be integrated into SimpleFlow, it was ultimately
+not able to be ported into the SimpleFlow project. SimpleFlow is a custom kernel that is
+not tailored for PAMEx's integration yet. PAMEx on the otherhand requires custom kernel modifications
+in order to enforce its security policies properly. Therefore, the next step for the PAMEx
+project is to customize the SimpleFlow kernel to allow the integration of PAMEx.
+
+The system was developed and integrated as several lightweight 
+tools. Therefore, the porting of PAMEx onto SimpleFlow or any 
 other system should be straightforward because if any of the PAMEx 
 tools fail, it should be simple to pinpoint the issue. 
 Likewise, any future maintenance that needs to be performed on PAMEx 

@@ -24,7 +24,7 @@ A hierarchical compartment defined by the privileged administrative user. Each l
 
 \subsubsection*{Linux Security Module}
 
-A framewok integrated into the Linux kernel which provides access controls to processes, files, and other aspects of the Linux system \cite{kerneldocs}.
+A framewok integrated into the Linux kernel which provides access controls to process files and other aspects of the Linux system \cite{kerneldocs}.
 
 \subsubsection*{PAMEx}
 
@@ -36,7 +36,7 @@ The hierarchical value of a level in PAMEx. Placements start at level zero for u
 
 \subsubsection*{Pluggable Authentication Module (PAM)}
 
-A separated process or task which is invoked during the authentication process. PAM modules are stacked to be invoked consecutively \cite{lauber}.
+A separated process or task which is invoked during a user's authentication process on a system. PAM modules are stacked to be invoked consecutively \cite{lauber}.
 
 \subsubsection*{Scrum}
 
@@ -47,5 +47,5 @@ A framework for the Agile method which uses a cyclical approach called a sprint.
 One cycle in the Scrum process. The PAMEx sprint time was two weeks.
 
 \subsubsection*{sudo-proc}
-The fake process file directory that PAMEx's PAM module creates. PAMEx creates this directory because it does not have privileges to write to actual process files on the system.
+The fake process file directory that PAMEx's PAM module creates. PAMEx creates this directory because the real proc directory is expecting an SELinux formatting which PAMEx does not use.
 

@@ -15,9 +15,9 @@
 \contentsline {subsection}{\numberline {3.3.}The PAMEx Compiler Outputs Two Files: The Assignments File and a Level Database}{17}{}%
 \contentsline {subsection}{\numberline {3.4.}Design and Implementation of The File Labeler and User Database Builder (FLUDB) Tool}{19}{}%
 \contentsline {subsection}{\numberline {3.5.}Design and Implementation of PAMEx's Pluggable Authentication Module (PAM)}{21}{}%
-\contentsline {subsection}{\numberline {3.6.}Design and Implementation of the Extraneous File Labeler Tool}{25}{}%
-\contentsline {subsection}{\numberline {3.7.}Design and Implementation of the Oracle Tool}{26}{}%
-\contentsline {section}{\numberline {4.}Testing}{28}{}%
-\contentsline {section}{\numberline {5.}Future Work}{30}{}%
-\contentsline {section}{\numberline {6.}Conclusion}{31}{}%
-\contentsline {section}{Bibliography}{32}{}%
+\contentsline {subsection}{\numberline {3.6.}Design and Implementation of the Extraneous File Labeler Tool}{24}{}%
+\contentsline {subsection}{\numberline {3.7.}Design and Implementation of the Oracle Tool}{25}{}%
+\contentsline {section}{\numberline {4.}Testing}{27}{}%
+\contentsline {section}{\numberline {5.}Future Work}{29}{}%
+\contentsline {section}{\numberline {6.}Conclusion}{30}{}%
+\contentsline {section}{Bibliography}{31}{}%
