@@ -14,49 +14,49 @@ test2
  - Tests the definition of levels with set command for restricted
  + Tests the > command for defining level hierarchy
 
-test 3
+test3
 ---------
  - Tests the definition of levels with set command for restricted
  - Tests the > command for defining level hierarchy
  + Tests the < command for defining level hierarchy
 
-test 4
+test4
 ---------
  - Tests the definition of levels with the set command for both restricted and unrestricted
  - Tests the definition of labels
  - Tests the > command for defining level hierarchy
  - Tests the < command for defining level hierarchy
 
-test 5
+test5
 ---------
  - Tests the definition of levels with the set command for restricted
  + Tests the file-assign command for assigning a level to a file
 
-test 6
+test6
 ---------
  - Tests the definition of levels with the set command for restricted
  + Tests the user-assign command for assigning a level to a user
 
-test 7
+test7
 ---------
  - Tests the definition of levels with the set command for restricted
  - Tests the definition of labels
  + Tests the file-assign command for assigning a level and a label to a file
 
-test 8
+test8
 ---------
  - Tests the definition of levels with the set command for restricted
  - Tests the definition of labels
  + Tests the user-assign command for assigning a level and a label to a file
 
-test 9
+test9
 ---------
  - Tests the definition of levels with the set command for restricted
  - Tests the definition of labels
  + Tests the file-assign command for assigning a level and multiple labels to a file
  + Tests the user-assign command for assigning a level and multiple labels to a file
 
-test 10
+test10
 ---------
  - Tests the definition of levels with the set command for both restricted and unrestricted
  - Tests the definition of labels
@@ -66,7 +66,7 @@ test 10
  - Tests the file-assign command for assigning a level and multiple labels to a file
  - Tests the user-assign command for assigning a level and a label to a file
 
-test 11
+test11
 ---------
  + Tests comments
  - Tests the definition of levels with the set command for both restricted and unrestricted
@@ -77,4 +77,5 @@ test 11
  - Tests the file-assign command for assigning a level and multiple labels to a file
  - Tests the user-assign command for assigning a level and a label to a file
 
-
+TODO:
+ - Error handling tests
