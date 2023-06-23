@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "pam.h": "c",
-        "stdlib.h": "c",
-        "policy-interpreter.h": "c",
-        "file-labeler.h": "c"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}
