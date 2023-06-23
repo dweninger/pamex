@@ -1,4 +1,5 @@
-# capstone
+# PAMEx Capstone Project
+
 Directories:
  
  agile - information about the approach to creating the project
