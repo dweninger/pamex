@@ -3,7 +3,8 @@ PAMEx was created as a Master's of Software Engineering capstone project.
 Its purpose is to be a simple, streamlined process for a priviliged administrative 
 user to create a custom, flexible file security policy. The administrator can define
 a hierarchical level structure of which to define the security of the files and
-users as well as a non-hierarchical label structure.
+users as well as a non-hierarchical label structure. This is similar to and modeled
+after how the United States classifies files.
 
 To use PAMEx, a priviliged user should create a PAMEx language file to feed into the
 PAMEx parser. The outputted policy file should then be fed into the FLUDB tool. 
