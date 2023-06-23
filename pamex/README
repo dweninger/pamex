@@ -18,6 +18,18 @@ security clearance to access a file.
 
 (SYSTEM WITH PAM MOD, LEVELDB, USERDB, EXT ATTRS) -> {Oracle}
 
+Steps to using PAMEx:
+1)  Set up a virtual machine with Fedora OS
+2)  Clone the PAMEx Git repository onto said virtual machine
+3)  Create data directory in etc (this is where leveldb and userdb will be stored)
+4)  Create PAMEx language file (follow instructions in the README in the parser directory)
+5)  Run the parser with the new language file and output the leveldb and policy-out files
+6)  Run the FLUDB tool with the policy-out file
+7)  Make PAMEx's PAM module to create a shared object file and follow the custom PAM module
+     directory's README instructions
+8)  Log out of the system and back in
+9)  Use the Oracle tool to test your PAMEx policy
+10) Optional: Update your policy with the file_labeler tool
 
 -------------------------------------
 |            WARNING:               | 
@@ -28,6 +40,9 @@ security clearance to access a file.
 |    is liable to destruction of    |
 |     authentication processes.     |
 -------------------------------------
+
+
+[Feel free to use any of this source code for any non-monitary and ethical use]
 
 Author: Daniel Weninger
 Last Modified: 06/22/2023
