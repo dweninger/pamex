@@ -1,7 +1,7 @@
 # capstone
 Directories:
  
- agile - information about the approach to creating project
+ agile - information about the approach to creating the project
  
  grammar_defs - the EBNF of the PAMEx language grammar and a sample language file
  
