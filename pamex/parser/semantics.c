@@ -3,7 +3,7 @@
  * These functions are called by the yacc file and are used to interpret the syntax
  * 	and output the file and user definiton file 
  * Author: Daniel Weninger
- * Last Modified: 2/18/2023
+ * Last Modified: 06/25/2023
 */
 
 #include <stdio.h>
@@ -21,12 +21,6 @@ extern symbol symtab[NHASH]; // The symbol table holding all of the variable inf
 extern int print_flag; // Whether or not the program should print
 char * g_label_list; // 
 
-void Finish() {
-	//levels = 0;	
-	//print_flag = -1;
-	//free(g_label_list);
-}
-
 /**
  * do_user_assign_level - write the level information for a particular user to the out file
  * level_name  the name of the level that is being written
@@ -35,7 +29,7 @@ void Finish() {
 void do_user_assign_level(char * file_path, char * level_name, char * user) {
 	symbol * sym = lookup(level_name, LEVEL);
 	char * level_data = format_level_data(sym);
-	
+
 	FILE * out_file = fopen(file_path, "a");
 	fprintf(out_file, "USER_LEVEL %s %s\n", user, level_data);
 	fclose(out_file);
@@ -206,9 +200,8 @@ void do_define_label(char * label_name) {
 		// add new label into symbol table
 		add_label(0, label_name);
 	} else {
-		// label is being re-defined. Don't allow
-		perror("Error: cannot redefine label");
-		exit(EXIT_FAILURE);
+		// Label is being re-defined
+		return;
 	}
 	g_label_list = malloc(sizeof(char *));
 }
@@ -224,6 +217,10 @@ void do_define_label(char * label_name) {
 int do_comp(int op, char * id) {
 	int cur_placement = -1;
 	symbol * sym = lookup(id, LEVEL);
+	if(!sym || !sym->ref_list || !sym->ref_list[0].level || !sym->ref_list[0].level->placement) {
+		perror("Comparison operator error. Comparison level does not exist.");
+		exit(EXIT_FAILURE);
+	}
 	if(op == 1) {	
 		// <
 		cur_placement = sym->ref_list[0].level->placement;
@@ -231,7 +228,7 @@ int do_comp(int op, char * id) {
 		// >
 		cur_placement = sym->ref_list[0].level->placement + 1;
 	} else {
-		perror("Comparison operator error\n");
+		perror("Comparison operator error. Operator must be '>', '<', or 'set'.\n");
 		exit(EXIT_FAILURE);
 	}
 	return cur_placement;
@@ -251,7 +248,7 @@ int do_set(int res, char * level_db_path) {
 	}	
 	// check if level is unrestricted or restricted
 	if(res != 0 && res != 1) {
-		perror("Error setting level\n");
+		perror("Error setting level. Must set to either restricted or unrestricted.\n");
 		exit(EXIT_FAILURE);
 	}
 	// return restricted or unrestricted to be used later for placement
