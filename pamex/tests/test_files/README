@@ -77,5 +77,25 @@ test11
  - Tests the file-assign command for assigning a level and multiple labels to a file
  - Tests the user-assign command for assigning a level and a label to a file
 
+test12
+-----------
+ - Syntax error check
+ + missing semi-colon ";" on line 4
+
+test13
+-----------
+ - Syntax error check
+ + missing closing parethesis ")" on line 4
+
+test14
+-----------
+ - Syntax error check
+ + missing opening parenthesis "(" on line 4
+
+test15
+-----------
+ - Syntax error check
+ + missing keyword "level" on line 5
+
 TODO:
  - Error handling tests

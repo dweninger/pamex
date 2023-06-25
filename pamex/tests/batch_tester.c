@@ -18,8 +18,10 @@ int main(int argc, char ** argv) {
 		consecutive_test_files = atoi(argv[2]);
 	}
 	for(int i = 1; i <= consecutive_test_files; i++) {
+		printf("Starting Test %d...\n", i);
 		char * command = malloc(200);
-		sprintf(command, "../parser %s%s%d -p", dir_path, "test", i);
+		sprintf(command, "../parser/parser %s%s%d ../example_data/policy-out ../example_data/leveldb -p", dir_path, "test", i);
 		int status = system(command);
+		printf("Finished Test %d\n\n", i);
 	}
 }

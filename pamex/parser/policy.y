@@ -13,8 +13,8 @@
 #include "semantics.h"
 
 extern int yylex();
-extern int yylineno();
-extern int yytext();
+extern int yylineno;
+extern char* yytext;
 int printFlag = 0;
 int levels = 0;
 char * out_path;
@@ -89,35 +89,6 @@ id 			: 	ID													{ $$ = $1; };
 %%
 
 int main(int ac, char ** av) {	
-	// Section used for batch testing: not working
-	// Use batch testing tool instead
-	#ifdef TEST
-	if(ac != 2 || (strcmp(av[1], "-p") != 0 && strcmp(av[1], "-k") != 0)) {
-		fprintf(stderr, "usage: %s (-p | -k)\n", av[0]);
-		exit(EXIT_FAILURE);
-	}
-	printf("Starting Parser Unit Tests...\n\n");
-	for(int i = 1; i < 12; i++) {
-		printf("Starting test %d:\n", i);
-		extern FILE * yyin;
-		char current_file_name[64];
-		sprintf(current_file_name, "./test_files/test%d", i);
-		printf("current_file_name %s\n", current_file_name);
-		if((yyin = fopen(current_file_name, "r")) == NULL) {
-			perror(av[1]);
-			exit(1);
-		}
-			
-		if(!yyparse()) {
-			printf("Test %d worked.\n", i);
-		} else {
-			printf("Test %d failed.\n", i);
-		}
-		levels = 0;
-		fclose(yyin);
-	}
-
-	#else
 	if(ac != 5 || (strcmp(av[4], "-p") != 0 && strcmp(av[4], "-k") != 0)) {
 		fprintf(stderr, "usage: %s <file_in> <file_out> <level_db_out> (-p | -k)\n", av[0]);
 		exit(EXIT_FAILURE);
@@ -157,9 +128,8 @@ int main(int ac, char ** av) {
 	} else {
 		printf("Policy parser failed.\n");
 	}
-	#endif
 }
 
 void yyerror(char * msg) {
-	printf("%d: %s at '%s'\n", yylineno, msg, yytext);
+	printf("ERROR: line %d | %s before '%s'\n", yylineno, msg, yytext);
 }
